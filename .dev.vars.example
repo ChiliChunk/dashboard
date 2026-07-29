@@ -1,0 +1,9 @@
+# Copier en .dev.vars (non versionné) pour le développement local.
+# En production, ces valeurs sont des secrets Cloudflare Pages
+# (`wrangler pages secret put <NOM>`), jamais commis dans wrangler.toml.
+
+STRAVA_CLIENT_ID=
+STRAVA_CLIENT_SECRET=
+# Chaîne aléatoire longue, propre à cet environnement — sert de base au
+# chiffrement AES-GCM du jeton de rafraîchissement (functions/api/auth/crypto.ts).
+SESSION_ENCRYPTION_KEY=
