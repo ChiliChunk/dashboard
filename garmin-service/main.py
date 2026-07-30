@@ -15,6 +15,7 @@ sys.stderr.reconfigure(encoding="utf-8")
 
 HOST = "127.0.0.1"
 PORT = 8799
+MAX_PAGE_SIZE = 200
 
 
 def load_credentials() -> tuple[str, str]:
@@ -54,8 +55,11 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if segments == ["activities"]:
                 query = parse_qs(parsed.query)
-                after = int(query.get("after", ["0"])[0])
-                self._send_json(200, garmin_client.get_activities_since(after))
+                offset = max(0, int(query.get("offset", ["0"])[0]))
+                # Plafonné : une page démesurée annulerait l'intérêt de la
+                # pagination (progression affichée, arrêt anticipé).
+                limit = min(MAX_PAGE_SIZE, max(1, int(query.get("limit", ["50"])[0])))
+                self._send_json(200, garmin_client.get_activity_page(offset, limit))
                 return
 
             self._send_json(404, {"error": "Route inconnue."})

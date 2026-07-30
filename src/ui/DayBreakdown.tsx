@@ -7,12 +7,14 @@ import type { Activity } from "../domain/types";
 interface DayBreakdownProps {
   period: PeriodRange;
   activities: Activity[];
+  /** Répartition par sport de la période affichée, en titre du cadre (ex. « Course à pied 2, vélo 0 »). */
+  title: string;
 }
 
 type DayState = "future" | "empty" | "active";
 
 /** Répartition jour par jour de la semaine en cours (CA2.7). Chaque état a son propre texte (CA2.8, ENF6). */
-export function DayBreakdown({ period, activities }: DayBreakdownProps) {
+export function DayBreakdown({ period, activities, title }: DayBreakdownProps) {
   if (period.kind !== "current-week" || period.start === null) {
     return null;
   }
@@ -23,7 +25,7 @@ export function DayBreakdown({ period, activities }: DayBreakdownProps) {
 
   return (
     <div className="card">
-      <p className="label">Répartition par jour</p>
+      <p className="label">{title}</p>
       <ul className="day-breakdown-list">
         {days.map((day) => {
           const dayActivities = activities.filter((activity) =>

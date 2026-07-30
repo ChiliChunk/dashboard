@@ -8,12 +8,9 @@ renvoie les activités sous une forme brute peu remaniée. La normalisation
 from __future__ import annotations
 
 import os
-from datetime import date, datetime, timezone
 from typing import Any
 
 from garminconnect import Garmin
-
-_EARLIEST_DATE = date(1990, 1, 1)
 
 _client: Garmin | None = None
 
@@ -29,22 +26,13 @@ def _get_client() -> Garmin:
     return _client
 
 
-def _start_time_epoch(activity: dict[str, Any]) -> float:
-    raw = activity.get("startTimeLocal") or activity.get("startTimeGMT")
-    if not raw:
-        return 0.0
-    parsed = datetime.strptime(raw, "%Y-%m-%d %H:%M:%S")
-    return parsed.replace(tzinfo=timezone.utc).timestamp()
+def get_activity_page(offset: int, limit: int) -> list[dict[str, Any]]:
+    """Une page d'activités, de la plus récente à la plus ancienne (CA1.2).
 
-
-def get_activities_since(after_epoch: int) -> list[dict[str, Any]]:
-    """Liste des activités postérieures à `after_epoch` ; un seul appel en lecture (CA1.2)."""
+    Le service ne décide pas ce qui est « nouveau » : il pagine, rien de plus.
+    Comparer une activité au curseur de synchronisation est une règle métier,
+    donc du ressort de `src/domain/` (plan.md, décision D3). Une page vide ou
+    plus courte que `limit` signale la fin de l'historique.
+    """
     client = _get_client()
-    start_date = (
-        datetime.fromtimestamp(after_epoch, tz=timezone.utc).date()
-        if after_epoch > 0
-        else _EARLIEST_DATE
-    )
-    end_date = datetime.now(timezone.utc).date()
-    activities = client.get_activities_by_date(str(start_date), str(end_date))
-    return [a for a in activities if _start_time_epoch(a) > after_epoch]
+    return client.get_activities(offset, limit)

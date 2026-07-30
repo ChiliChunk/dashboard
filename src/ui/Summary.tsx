@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { compareSummaries, summarizeBySport } from "../domain/aggregate";
-import type { ActivityFilters } from "../domain/filter";
 import { isWithinPeriod, isWithinPreviousPeriod, resolvePeriod, type PeriodKind } from "../domain/period";
 import type { Activity } from "../domain/types";
 import { formatDistance, formatDuration, formatElevation } from "../domain/units";
@@ -8,7 +7,7 @@ import type { SyncStatus as SyncStatusValue } from "../data/sync";
 import { DayBreakdown } from "./DayBreakdown";
 import { EmptyState } from "./EmptyState";
 import { PeriodHeader } from "./PeriodHeader";
-import { SyncStatus } from "./SyncStatus";
+import { RecentWeeks } from "./RecentWeeks";
 
 const PERIOD_OPTIONS: Array<{ kind: PeriodKind; label: string }> = [
   { kind: "current-week", label: "Semaine en cours" },
@@ -24,40 +23,22 @@ function signed(value: number, formatMagnitude: (value: number) => string): stri
 }
 
 interface SummaryProps {
-  /** Ensemble complet des activités connues, non filtré (pour distinguer « compte vide » de « période vide »). */
+  /** Ensemble complet des activités connues (pour distinguer « compte vide » de « période vide »). */
   allActivities: Activity[];
-  /** Activités déjà passées au filtre sport/dates partagé (CA3.5). */
-  filteredActivities: Activity[];
-  filters: ActivityFilters;
-  onFiltersChange: (next: ActivityFilters) => void;
   status: SyncStatusValue;
-  syncedCount: number;
-  lastSyncAt: number | null;
-  errorMessage: string | null;
-  onResyncAll: () => void;
 }
 
-export function Summary({
-  allActivities,
-  filteredActivities,
-  filters,
-  onFiltersChange,
-  status,
-  syncedCount,
-  lastSyncAt,
-  errorMessage,
-  onResyncAll,
-}: SummaryProps) {
+export function Summary({ allActivities, status }: SummaryProps) {
   const [periodKind, setPeriodKind] = useState<PeriodKind>("current-week");
   const period = useMemo(() => resolvePeriod(periodKind), [periodKind]);
 
   const currentActivities = useMemo(
-    () => filteredActivities.filter((activity) => isWithinPeriod(activity.startedAtLocal, period)),
-    [filteredActivities, period],
+    () => allActivities.filter((activity) => isWithinPeriod(activity.startedAtLocal, period)),
+    [allActivities, period],
   );
   const previousActivities = useMemo(
-    () => filteredActivities.filter((activity) => isWithinPreviousPeriod(activity.startedAtLocal, period)),
-    [filteredActivities, period],
+    () => allActivities.filter((activity) => isWithinPreviousPeriod(activity.startedAtLocal, period)),
+    [allActivities, period],
   );
 
   const comparison = useMemo(
@@ -66,6 +47,13 @@ export function Summary({
   );
   const bySport = useMemo(() => summarizeBySport(currentActivities), [currentActivities]);
   const hasComparison = period.previousStart !== null;
+  const sportBreakdownLabel =
+    `Répartition : course à pied ${bySport.run.count}, vélo ${bySport.ride.count}, randonnée ${bySport.hike.count}` +
+    (bySport.other.count > 0 ? `, autre ${bySport.other.count}` : "");
+
+  if (status === "cleared") {
+    return <EmptyState variant="empty-storage" />;
+  }
 
   if (status === "idle" || (status === "syncing" && allActivities.length === 0)) {
     return <EmptyState variant="loading" />;
@@ -73,8 +61,9 @@ export function Summary({
 
   return (
     <div className="stack">
-      <PeriodHeader period={period} filters={filters} onFiltersChange={onFiltersChange}>
+      <PeriodHeader period={period}>
         <select
+          aria-label="Période affichée"
           value={periodKind}
           onChange={(event) => setPeriodKind(event.target.value as PeriodKind)}
         >
@@ -133,23 +122,12 @@ export function Summary({
               )}
             </div>
           </div>
-          <p className="muted">
-            Répartition : course à pied {bySport.run.count}, vélo {bySport.ride.count}, randonnée{" "}
-            {bySport.hike.count}
-            {bySport.other.count > 0 ? `, autre ${bySport.other.count}` : ""}
-          </p>
         </div>
       )}
 
-      <DayBreakdown period={period} activities={currentActivities} />
+      <DayBreakdown period={period} activities={currentActivities} title={sportBreakdownLabel} />
 
-      <SyncStatus
-        status={status}
-        syncedCount={syncedCount}
-        lastSyncAt={lastSyncAt}
-        errorMessage={errorMessage}
-        onResyncAll={onResyncAll}
-      />
+      <RecentWeeks activities={allActivities} />
     </div>
   );
 }

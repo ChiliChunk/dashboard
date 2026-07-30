@@ -21,9 +21,13 @@ async function garminFetch(path: string): Promise<Response> {
   return response;
 }
 
-/** Récupération incrémentale depuis le service Garmin local (CA1.3, CA1.4). */
-export async function fetchActivitiesSince(after: number): Promise<Activity[]> {
-  const response = await garminFetch(`/activities?after=${after}`);
+/**
+ * Une page d'activités, de la plus récente à la plus ancienne. Décider
+ * lesquelles sont nouvelles n'appartient pas à cette couche : voir
+ * `src/domain/incremental.ts` (CA1.3, CA1.4).
+ */
+export async function fetchActivityPage(offset: number, limit: number): Promise<Activity[]> {
+  const response = await garminFetch(`/activities?offset=${offset}&limit=${limit}`);
   const rawActivities = (await response.json()) as unknown[];
   return rawActivities.map((entry) => normalizeGarminActivity(parseGarminActivity(entry)));
 }

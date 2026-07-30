@@ -1,4 +1,9 @@
-type EmptyStateVariant = "loading" | "empty-period" | "no-account-activity" | "no-filter-match";
+type EmptyStateVariant =
+  | "loading"
+  | "empty-period"
+  | "no-account-activity"
+  | "no-filter-match"
+  | "empty-storage";
 
 interface EmptyStateProps {
   variant: EmptyStateVariant;
@@ -20,6 +25,12 @@ const MESSAGES: Record<EmptyStateVariant, { title: string; body: string }> = {
   "no-filter-match": {
     title: "Aucun résultat pour ces filtres",
     body: "Essayez d'élargir l'intervalle de dates ou les sports sélectionnés.",
+  },
+  // Distinct de « aucune sortie enregistrée » : le compte Garmin n'est pas
+  // vide, c'est la copie locale qui vient d'être effacée.
+  "empty-storage": {
+    title: "Stockage local vidé",
+    body: "Lancez une synchronisation pour récupérer tout l'historique.",
   },
 };
 

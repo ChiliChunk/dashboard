@@ -40,7 +40,7 @@ Confirmation de démarrage attendue dans les logs :
 
 - Racine du dépôt, commande `npm run dev` (script dans `package.json`).
 - Vite sert par défaut sur `http://localhost:5173`.
-- Une configuration est déjà déclarée dans `.claude/launch.json` sous le nom
+- Une configuration est déjà déclarée dans `.Codex/launch.json` sous le nom
   `dashboard-garmin` (`npm run dev`, port 5173) : utiliser
   `preview_start` avec `{"name": "dashboard-garmin"}` pour l'ouvrir dans le
   Browser pane plutôt que de relancer `npm run dev` à la main.

@@ -2,7 +2,7 @@ import "fake-indexeddb/auto";
 import { describe, expect, it } from "vitest";
 import { clearDatabase, getAllActivities, putActivities } from "../data/store";
 import { compareSummaries, summarizeBySport } from "./aggregate";
-import { applyFilters, sortActivities } from "./filter";
+import { sortActivities } from "./filter";
 import { isWithinPeriod, isWithinPreviousPeriod, resolvePeriod } from "./period";
 import type { Activity } from "./types";
 
@@ -53,12 +53,15 @@ describe("performance sur un historique de 5000 activités", () => {
     expect(elapsed).toBeLessThan(2000);
   });
 
-  it("un filtre s'applique en moins de 300 ms sur 5000 activités (ENF5)", () => {
+  it("borner une période puis trier reste sous 300 ms (ENF5)", () => {
     const activities = syntheticActivities(5000);
+    const period = resolvePeriod("current-year", new Date(2024, 6, 1));
+
     const start = performance.now();
-    const filtered = applyFilters(activities, { sports: ["run"], from: null, to: null });
-    sortActivities(filtered, "date", "desc");
+    const scoped = activities.filter((activity) => isWithinPeriod(activity.startedAtLocal, period));
+    sortActivities(scoped, "date", "desc");
     const elapsed = performance.now() - start;
+
     expect(elapsed).toBeLessThan(300);
   });
 });
