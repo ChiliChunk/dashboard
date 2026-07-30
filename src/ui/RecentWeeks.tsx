@@ -14,28 +14,31 @@ interface RecentWeeksProps {
 /**
  * Une case par semaine sur les 4 dernières semaines révolues (la semaine en
  * cours, incomplète, est exclue — ses totaux ne se compareraient pas à ceux
- * d'une semaine entière), la plus récente en premier.
+ * d'une semaine entière), la plus ancienne à gauche.
  */
 export function RecentWeeks({ activities }: RecentWeeksProps) {
   const weeks = useMemo(() => {
-    // `lastWeeksBuckets` rend déjà la plus récente en premier.
-    return lastWeeksBuckets(WEEK_COUNT).map((bucket) => {
-      const summary = summarize(
-        activities.filter(
-          (activity) =>
-            activity.startedAtLocal >= bucket.start && activity.startedAtLocal <= bucket.end,
-        ),
-      );
-      return {
-        ...bucket,
-        kpis: [
-          { name: "Sorties", value: String(summary.count) },
-          { name: "Distance", value: formatDistance(summary.totalDistance) ?? "—" },
-          { name: "D+", value: formatElevation(summary.totalElevationGain) ?? "—" },
-          { name: "Durée", value: formatDuration(summary.totalMovingTime) ?? "—" },
-        ],
-      };
-    });
+    // `lastWeeksBuckets` rend la plus récente en premier ; on inverse pour l'affichage.
+    return lastWeeksBuckets(WEEK_COUNT)
+      .slice()
+      .reverse()
+      .map((bucket) => {
+        const summary = summarize(
+          activities.filter(
+            (activity) =>
+              activity.startedAtLocal >= bucket.start && activity.startedAtLocal <= bucket.end,
+          ),
+        );
+        return {
+          ...bucket,
+          kpis: [
+            { name: "Sorties", value: String(summary.count) },
+            { name: "Distance", value: formatDistance(summary.totalDistance) ?? "—" },
+            { name: "D+", value: formatElevation(summary.totalElevationGain) ?? "—" },
+            { name: "Durée", value: formatDuration(summary.totalMovingTime) ?? "—" },
+          ],
+        };
+      });
   }, [activities]);
 
   return (

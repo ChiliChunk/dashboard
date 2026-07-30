@@ -193,6 +193,14 @@ input[type="date"] {
 .app-header-line {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.app-header-right {
+  display: flex;
+  align-items: center;
   gap: 16px;
   flex-wrap: wrap;
 }
@@ -201,10 +209,12 @@ input[type="date"] {
   font-variant-numeric: tabular-nums;
 }
 
-/* Occupe l'espace libre pour repousser le bouton à droite. */
 .app-header-state {
-  flex: 1;
   min-width: 0;
+}
+
+.app-header-period {
+  flex-shrink: 0;
 }
 
 .app-header-actions {
@@ -288,28 +298,6 @@ input[type="date"] {
   }
 }
 
-/* Bandeau de période (PeriodHeader) — délibérément discret : pas de carte,
-   texte de poids courant, pour ne pas rivaliser avec les KPI juste en dessous. */
-
-.period-header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 4px;
-}
-
-.period-header-label {
-  color: var(--text-muted);
-}
-
-.period-header-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
 /* Synthèse (Summary) */
 
 .stat-grid {
@@ -373,24 +361,31 @@ input[type="date"] {
   list-style: none;
 }
 
-.day-breakdown-list li::before {
-  content: "";
-  display: block;
+/* Hauteur fixe : ancre la barre en bas, pour que le jour et le texte sous la
+   barre restent alignés quelle que soit la hauteur de la barre elle-même. */
+.day-bar {
+  height: 64px;
   width: 32px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.day-bar-fill {
+  width: 100%;
   border-radius: var(--radius-ctl);
 }
 
-.day-breakdown-list li[data-state="active"]::before {
-  height: 64px;
+/* Hauteur proportionnelle à la distance du jour (fixée en style inline). */
+li[data-state="active"] .day-bar-fill {
   background: var(--accent);
 }
 
-.day-breakdown-list li[data-state="empty"]::before,
-.day-breakdown-list li[data-state="future"]::before {
+/* Vide ou futur : simple trait, centré dans le même espace que la barre. */
+li[data-state="empty"] .day-bar-fill,
+li[data-state="future"] .day-bar-fill {
   height: 4px;
   background: var(--bg-track);
   align-self: center;
-  margin: 30px 0;
 }
 
 .day-breakdown-list li p:first-child {
@@ -443,6 +438,25 @@ input[type="date"] {
 }
 .badge[data-sport="other"] {
   --sport-color: var(--sport-other);
+}
+
+/* Graphique de progression (VolumeChart) */
+
+.chart-wrap {
+  position: relative;
+}
+
+.chart-tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%) translateY(-8px);
+  background: var(--bg-page);
+  border: 1px solid var(--bg-track);
+  border-radius: var(--radius-ctl);
+  padding: 4px 10px;
+  font-size: var(--fs-caption);
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
 }
 
 /* Détail d'une sortie (ActivityDetail) */

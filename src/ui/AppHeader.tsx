@@ -1,4 +1,6 @@
+import { useMemo } from "react";
 import type { SyncStatus as SyncStatusValue } from "../data/sync";
+import { formatCompactRange, resolvePeriod } from "../domain/period";
 
 interface AppHeaderProps {
   /** Nombre d'activités présentes dans le stockage local. */
@@ -87,56 +89,61 @@ export function AppHeader({
   onClear,
 }: AppHeaderProps) {
   const isSyncing = status === "syncing";
+  const currentWeekLabel = useMemo(() => formatCompactRange(resolvePeriod("current-week")), []);
 
   return (
     <header className="app-header">
       <div className="app-header-line">
-        <p className="app-header-count">
-          <strong>{storedCount}</strong> {plural(storedCount, "activité stockée", "activités stockées")}
-        </p>
+        {currentWeekLabel && <p className="app-header-period caption muted">{currentWeekLabel}</p>}
 
-        <div className="app-header-state" role="status">
-          {isSyncing && <span className="caption">{newActivitiesLabel(newCount)}…</span>}
-          {status === "synced" &&
-            (newCount > 0 ? (
-              <span className="caption">{newActivitiesLabel(newCount)}</span>
-            ) : (
-              lastSyncAt !== null && (
-                <span className="caption muted">À jour — {dateFormatter.format(lastSyncAt)}</span>
-              )
-            ))}
-          {status === "cleared" && <span className="caption">Stockage local vidé</span>}
-          {status === "offline" && <span className="caption">Hors ligne — stockage local affiché</span>}
-          {status === "error" && errorMessage && (
-            <span className="caption">Échec de synchronisation : {errorMessage}</span>
-          )}
-        </div>
+        <div className="app-header-right">
+          <p className="app-header-count">
+            <strong>{storedCount}</strong> {plural(storedCount, "activité stockée", "activités stockées")}
+          </p>
 
-        <div className="app-header-actions">
-          <button
-            type="button"
-            className="icon-button"
-            onClick={onResync}
-            disabled={isSyncing}
-            data-syncing={isSyncing}
-            aria-label={isSyncing ? "Synchronisation en cours" : "Chercher les nouvelles activités"}
-            title={isSyncing ? "Synchronisation en cours" : "Chercher les nouvelles activités"}
-          >
-            <SyncIcon />
-          </button>
+          <div className="app-header-state" role="status">
+            {isSyncing && <span className="caption">{newActivitiesLabel(newCount)}…</span>}
+            {status === "synced" &&
+              (newCount > 0 ? (
+                <span className="caption">{newActivitiesLabel(newCount)}</span>
+              ) : (
+                lastSyncAt !== null && (
+                  <span className="caption muted">À jour — {dateFormatter.format(lastSyncAt)}</span>
+                )
+              ))}
+            {status === "cleared" && <span className="caption">Stockage local vidé</span>}
+            {status === "offline" && <span className="caption">Hors ligne — stockage local affiché</span>}
+            {status === "error" && errorMessage && (
+              <span className="caption">Échec de synchronisation : {errorMessage}</span>
+            )}
+          </div>
 
-          <button
-            type="button"
-            className="icon-button icon-button-danger"
-            onClick={onClear}
-            // Interdit pendant une passe : la boucle de synchronisation
-            // continuerait d'écrire dans une base qu'on vient de supprimer.
-            disabled={isSyncing || storedCount === 0}
-            aria-label="Vider le stockage local"
-            title="Vider le stockage local"
-          >
-            <TrashIcon />
-          </button>
+          <div className="app-header-actions">
+            <button
+              type="button"
+              className="icon-button"
+              onClick={onResync}
+              disabled={isSyncing}
+              data-syncing={isSyncing}
+              aria-label={isSyncing ? "Synchronisation en cours" : "Chercher les nouvelles activités"}
+              title={isSyncing ? "Synchronisation en cours" : "Chercher les nouvelles activités"}
+            >
+              <SyncIcon />
+            </button>
+
+            <button
+              type="button"
+              className="icon-button icon-button-danger"
+              onClick={onClear}
+              // Interdit pendant une passe : la boucle de synchronisation
+              // continuerait d'écrire dans une base qu'on vient de supprimer.
+              disabled={isSyncing || storedCount === 0}
+              aria-label="Vider le stockage local"
+              title="Vider le stockage local"
+            >
+              <TrashIcon />
+            </button>
+          </div>
         </div>
       </div>
 

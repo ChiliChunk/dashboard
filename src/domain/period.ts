@@ -109,6 +109,12 @@ export function resolvePeriod(kind: PeriodKind, now: Date = new Date()): PeriodR
   }
 }
 
+/** Bornes d'une période sous forme compacte (« 27 juil. – 2 août »), pour un affichage accolé à un autre élément. */
+export function formatCompactRange(period: PeriodRange): string | null {
+  if (period.start === null) return null;
+  return `${format(period.start, "d MMM", { locale: fr })} – ${format(period.end, "d MMM", { locale: fr })}`;
+}
+
 export function isWithinPeriod(date: Date, period: PeriodRange): boolean {
   if (period.start === null) return date <= period.end;
   return date >= period.start && date <= period.end;

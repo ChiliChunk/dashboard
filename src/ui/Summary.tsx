@@ -1,21 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { compareSummaries, summarizeBySport } from "../domain/aggregate";
-import { isWithinPeriod, isWithinPreviousPeriod, resolvePeriod, type PeriodKind } from "../domain/period";
+import { isWithinPeriod, isWithinPreviousPeriod, resolvePeriod } from "../domain/period";
 import type { Activity } from "../domain/types";
 import { formatDistance, formatDuration, formatElevation } from "../domain/units";
 import type { SyncStatus as SyncStatusValue } from "../data/sync";
 import { DayBreakdown } from "./DayBreakdown";
 import { EmptyState } from "./EmptyState";
-import { PeriodHeader } from "./PeriodHeader";
 import { RecentWeeks } from "./RecentWeeks";
-
-const PERIOD_OPTIONS: Array<{ kind: PeriodKind; label: string }> = [
-  { kind: "current-week", label: "Semaine en cours" },
-  { kind: "last-30-days", label: "30 derniers jours" },
-  { kind: "current-year", label: "Année en cours" },
-  { kind: "previous-year", label: "Année précédente" },
-  { kind: "all-time", label: "Historique complet" },
-];
 
 function signed(value: number, formatMagnitude: (value: number) => string): string {
   const sign = value >= 0 ? "+" : "";
@@ -29,8 +20,7 @@ interface SummaryProps {
 }
 
 export function Summary({ allActivities, status }: SummaryProps) {
-  const [periodKind, setPeriodKind] = useState<PeriodKind>("current-week");
-  const period = useMemo(() => resolvePeriod(periodKind), [periodKind]);
+  const period = useMemo(() => resolvePeriod("current-week"), []);
 
   const currentActivities = useMemo(
     () => allActivities.filter((activity) => isWithinPeriod(activity.startedAtLocal, period)),
@@ -47,9 +37,17 @@ export function Summary({ allActivities, status }: SummaryProps) {
   );
   const bySport = useMemo(() => summarizeBySport(currentActivities), [currentActivities]);
   const hasComparison = period.previousStart !== null;
-  const sportBreakdownLabel =
-    `Répartition : course à pied ${bySport.run.count}, vélo ${bySport.ride.count}, randonnée ${bySport.hike.count}` +
-    (bySport.other.count > 0 ? `, autre ${bySport.other.count}` : "");
+  const sportBreakdownLabel = (() => {
+    const parts = [
+      ["course à pied", bySport.run.count],
+      ["vélo", bySport.ride.count],
+      ["randonnée", bySport.hike.count],
+      ["autre", bySport.other.count],
+    ]
+      .filter(([, count]) => (count as number) > 0)
+      .map(([label, count]) => `${label} ${count}`);
+    return parts.length > 0 ? `Répartition : ${parts.join(", ")}` : "Répartition : aucune sortie";
+  })();
 
   if (status === "cleared") {
     return <EmptyState variant="empty-storage" />;
@@ -61,20 +59,6 @@ export function Summary({ allActivities, status }: SummaryProps) {
 
   return (
     <div className="stack">
-      <PeriodHeader period={period}>
-        <select
-          aria-label="Période affichée"
-          value={periodKind}
-          onChange={(event) => setPeriodKind(event.target.value as PeriodKind)}
-        >
-          {PERIOD_OPTIONS.map((option) => (
-            <option key={option.kind} value={option.kind}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </PeriodHeader>
-
       {allActivities.length === 0 ? (
         <EmptyState variant="no-account-activity" />
       ) : currentActivities.length === 0 ? (

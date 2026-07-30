@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { resolvePeriod, type PeriodKind } from "../domain/period";
 import { buildAxisScale } from "../domain/scale";
 import { buildTimeline, type Granularity, type VolumeMetric } from "../domain/timeline";
@@ -61,9 +61,11 @@ const BAR_GAP = 4;
  */
 export function VolumeChart({ activities }: VolumeChartProps) {
   const [periodKind, setPeriodKind] = useState<PeriodKind>("current-year");
-  const [granularity, setGranularity] = useState<Granularity>("week");
+  const [granularity, setGranularity] = useState<Granularity>("month");
   const [metric, setMetric] = useState<VolumeMetric>("distance");
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+  const chartWrapRef = useRef<HTMLDivElement>(null);
 
   const period = useMemo(() => resolvePeriod(periodKind), [periodKind]);
   const timeline = buildTimeline(activities, period, granularity, metric);
@@ -72,6 +74,23 @@ export function VolumeChart({ activities }: VolumeChartProps) {
   const average = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0;
   const barWidth = timeline.length > 0 ? CHART_WIDTH / timeline.length - BAR_GAP : 0;
   const unitLabel = granularity === "week" ? "semaine" : "mois";
+
+  /** Position du survol/focus en coordonnées écran, relatives au conteneur du graphique. */
+  function showTooltip(index: number, target: SVGRectElement) {
+    setFocusedIndex(index);
+    const wrapRect = chartWrapRef.current?.getBoundingClientRect();
+    if (!wrapRect) return;
+    const barRect = target.getBoundingClientRect();
+    setTooltipPos({
+      x: barRect.left + barRect.width / 2 - wrapRect.left,
+      y: barRect.top - wrapRect.top,
+    });
+  }
+
+  function hideTooltip() {
+    setFocusedIndex(null);
+    setTooltipPos(null);
+  }
 
   return (
     <div className="card">
@@ -106,94 +125,96 @@ export function VolumeChart({ activities }: VolumeChartProps) {
         </label>
       </div>
 
-      <svg
-        viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
-        role="img"
-        aria-label={`Graphique de ${METRIC_LABELS[metric].toLowerCase()} par ${unitLabel}`}
-      >
-        <defs>
-          <pattern id="pattern-ride" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
-            <rect width="6" height="6" fill="var(--sport-ride)" />
-            <line x1="0" y1="0" x2="0" y2="6" stroke="var(--bg-page)" strokeWidth="2" />
-          </pattern>
-          <pattern id="pattern-hike" patternUnits="userSpaceOnUse" width="6" height="6">
-            <rect width="6" height="6" fill="var(--sport-hike)" />
-            <line x1="0" y1="0" x2="6" y2="6" stroke="var(--bg-page)" strokeWidth="1" />
-            <line x1="6" y1="0" x2="0" y2="6" stroke="var(--bg-page)" strokeWidth="1" />
-          </pattern>
-          <pattern id="pattern-other" patternUnits="userSpaceOnUse" width="6" height="6">
-            <rect width="6" height="6" fill="var(--sport-other)" />
-            <circle cx="3" cy="3" r="1" fill="var(--bg-page)" />
-          </pattern>
-        </defs>
+      <div className="chart-wrap" ref={chartWrapRef}>
+        <svg
+          viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+          role="img"
+          aria-label={`Graphique de ${METRIC_LABELS[metric].toLowerCase()} par ${unitLabel}`}
+        >
+          <defs>
+            <pattern id="pattern-ride" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+              <rect width="6" height="6" fill="var(--sport-ride)" />
+              <line x1="0" y1="0" x2="0" y2="6" stroke="var(--bg-page)" strokeWidth="2" />
+            </pattern>
+            <pattern id="pattern-hike" patternUnits="userSpaceOnUse" width="6" height="6">
+              <rect width="6" height="6" fill="var(--sport-hike)" />
+              <line x1="0" y1="0" x2="6" y2="6" stroke="var(--bg-page)" strokeWidth="1" />
+              <line x1="6" y1="0" x2="0" y2="6" stroke="var(--bg-page)" strokeWidth="1" />
+            </pattern>
+            <pattern id="pattern-other" patternUnits="userSpaceOnUse" width="6" height="6">
+              <rect width="6" height="6" fill="var(--sport-other)" />
+              <circle cx="3" cy="3" r="1" fill="var(--bg-page)" />
+            </pattern>
+          </defs>
 
-        <line x1={0} y1={BASELINE_Y} x2={CHART_WIDTH} y2={BASELINE_Y} stroke="var(--text-muted)" />
+          <line x1={0} y1={BASELINE_Y} x2={CHART_WIDTH} y2={BASELINE_Y} stroke="var(--text-muted)" />
 
-        {timeline.map((bucket, index) => {
-          const x = index * (barWidth + BAR_GAP);
-          let cumulative = 0;
-          const segments = SPORT_ORDER.map((sport) => {
-            const sportRawValue = bucket.bySport[sport];
-            const sportValue = metricUnitValue(metric, sportRawValue);
-            if (sportValue <= 0) return null;
-            const segmentHeight = scale.max > 0 ? (sportValue / scale.max) * PLOT_HEIGHT : 0;
-            const y = BASELINE_Y - cumulative - segmentHeight;
-            cumulative += segmentHeight;
-            return { sport, y, segmentHeight };
-          });
+          {timeline.map((bucket, index) => {
+            const x = index * (barWidth + BAR_GAP);
+            let cumulative = 0;
+            const segments = SPORT_ORDER.map((sport) => {
+              const sportRawValue = bucket.bySport[sport];
+              const sportValue = metricUnitValue(metric, sportRawValue);
+              if (sportValue <= 0) return null;
+              const segmentHeight = scale.max > 0 ? (sportValue / scale.max) * PLOT_HEIGHT : 0;
+              const y = BASELINE_Y - cumulative - segmentHeight;
+              cumulative += segmentHeight;
+              return { sport, y, segmentHeight };
+            });
 
-          return (
-            <g key={bucket.start.toISOString()}>
-              {segments.map(
-                (segment) =>
-                  segment && (
-                    <rect
-                      key={segment.sport}
-                      x={x}
-                      y={segment.y}
-                      width={Math.max(barWidth, 1)}
-                      height={segment.segmentHeight}
-                      fill={SPORT_FILL[segment.sport]}
-                    />
-                  ),
-              )}
-              <rect
-                tabIndex={0}
-                role="button"
-                aria-label={`${bucket.label} : ${(values[index] ?? 0).toFixed(1)} ${METRIC_LABELS[metric]}`}
-                x={x}
-                y={BASELINE_Y - cumulative}
-                width={Math.max(barWidth, 1)}
-                height={Math.max(cumulative, PLOT_HEIGHT)}
-                fill="transparent"
-                onMouseEnter={() => setFocusedIndex(index)}
-                onFocus={() => setFocusedIndex(index)}
-                onMouseLeave={() => setFocusedIndex(null)}
-                onBlur={() => setFocusedIndex(null)}
-              />
-            </g>
-          );
-        })}
-      </svg>
+            return (
+              <g key={bucket.start.toISOString()}>
+                {segments.map(
+                  (segment) =>
+                    segment && (
+                      <rect
+                        key={segment.sport}
+                        x={x}
+                        y={segment.y}
+                        width={Math.max(barWidth, 1)}
+                        height={segment.segmentHeight}
+                        fill={SPORT_FILL[segment.sport]}
+                      />
+                    ),
+                )}
+                <rect
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`${bucket.label} : ${(values[index] ?? 0).toFixed(1)} ${METRIC_LABELS[metric]}`}
+                  x={x}
+                  y={BASELINE_Y - cumulative}
+                  width={Math.max(barWidth, 1)}
+                  height={Math.max(cumulative, PLOT_HEIGHT)}
+                  fill="transparent"
+                  onMouseEnter={(event) => showTooltip(index, event.currentTarget)}
+                  onFocus={(event) => showTooltip(index, event.currentTarget)}
+                  onMouseLeave={hideTooltip}
+                  onBlur={hideTooltip}
+                />
+              </g>
+            );
+          })}
+        </svg>
+
+        {focusedIndex !== null && tooltipPos && timeline[focusedIndex] && (
+          <div className="chart-tooltip" role="status" style={{ left: tooltipPos.x, top: tooltipPos.y }}>
+            {timeline[focusedIndex]!.label} : {(values[focusedIndex] ?? 0).toFixed(1)} {METRIC_LABELS[metric]}
+          </div>
+        )}
+      </div>
 
       <div style={{ display: "flex", gap: "12px" }}>
         {SPORT_ORDER.map((sport) => (
           <span key={sport} style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "13px" }}>
-            <span
-              aria-hidden="true"
-              style={{ width: 12, height: 12, background: SPORT_FILL[sport], display: "inline-block" }}
-            />
+            {/* Un `<span>` avec `background: url(#pattern-x)` ne peut pas afficher les motifs
+                SVG définis dans le graphique : seul un contexte SVG résout ces références. */}
+            <svg width="12" height="12" aria-hidden="true">
+              <rect width="12" height="12" fill={SPORT_FILL[sport]} />
+            </svg>
             {SPORT_LABELS[sport]}
           </span>
         ))}
       </div>
-
-      {focusedIndex !== null && timeline[focusedIndex] && (
-        <p className="caption" role="status">
-          {timeline[focusedIndex]!.label} : {(values[focusedIndex] ?? 0).toFixed(1)}{" "}
-          {METRIC_LABELS[metric]}
-        </p>
-      )}
 
       <p className="muted">
         Moyenne : {average.toFixed(1)} {METRIC_LABELS[metric]} / {unitLabel}
