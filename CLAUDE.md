@@ -41,35 +41,43 @@ Ne saute jamais une phase. Ne fusionne jamais deux phases dans une même répons
 
 ## État actuel
 
-- Constitution : rédigée (v1.0.0)
-- Fonctionnalité en cours : `specs/001-dashboard-strava/`
-- Phase atteinte : **4 — implémentation, 40/43 tâches terminées (2026-07-29).
-  `npx tsc --noEmit`, `npm run lint` et `npm run test` (73 tests) passent tous.
-  `npm run build` produit un site statique fonctionnel (903 modules) servi
-  avec succès via `wrangler pages dev`.**
-- D5 (fond cartographique) tranchée le 2026-07-29 : fond activable, désactivé
-  par défaut (`src/ui/TrackView.tsx`). T052 est faite.
-- Polices Inter embarquées (`public/fonts/*.woff2`, licence SIL, téléchargement
-  autorisé explicitement le 2026-07-29). T003 est complète.
-- **Restent T073, T074, T075** (lot 7) : elles exigent respectivement un test
-  multi-navigateurs réel (Firefox/Safari, hors de cet environnement), un
-  compte Strava vivant authentifié, et une révocation d'autorisation
-  déclenchée depuis Strava. Non automatisables (le plan, section 7, l'admet
-  explicitement).
-- **Aucune donnée réelle synchronisée** : sans identifiants Strava
-  (`STRAVA_CLIENT_ID`/`STRAVA_CLIENT_SECRET` dans `.dev.vars`, gitignored),
-  l'application ne peut être vérifiée visuellement au-delà de l'écran de
-  connexion. L'utilisateur a choisi de créer l'application Strava lui-même et
-  d'éditer `.dev.vars` directement — en attente de confirmation pour relancer
-  T074 et la vérification visuelle complète qui en dépend.
-- Référence visuelle : `specs/001-dashboard-strava/design/maquette-tableau-de-bord.html`
-  — fait autorité sur le registre visuel, pas par omission (décision Q11).
+- Constitution : rédigée (v1.0.0). Toujours en vigueur pour la fonctionnalité
+  002, à une exception près : l'article IV (« le quota Strava est une
+  ressource rare ») est **sans objet** depuis l'abandon de Strava — signalé
+  dans `specs/002-source-garmin/plan.md` (section 1 et risques), non corrigé
+  silencieusement. Un amendement explicite de la constitution serait
+  cohérent mais reste une décision de gouvernance distincte, non prise ici.
+- **Fonctionnalité 001** (`specs/001-dashboard-strava/`) : implémentation
+  gelée à 40/43 tâches (2026-07-29). L'API Strava étant devenue payante,
+  cette fonctionnalité est remplacée par la 002 plutôt que poursuivie — les
+  restantes T073–T075 ne seront pas traitées.
+- **Fonctionnalité en cours : `specs/002-source-garmin/`** — remplace Strava
+  par un compte Garmin comme source de données, sans démarche de connexion
+  dans l'application (identifiants configurés dans `garmin-service/.env`).
+- Phase atteinte : **4 — implémentation, 15/15 tâches terminées (2026-07-29).**
+  `npx tsc --noEmit`, `npm run lint`, `npm run test` (72 tests) et
+  `npm run build` passent tous. **Vérifié avec un compte Garmin réel** (T012,
+  T051) : toutes les vues existantes (synthèse, répartition par jour, liste,
+  détail d'une sortie, progression) affichent correctement de vraies
+  activités Garmin.
+- Deux erreurs de conception corrigées grâce à cette vérification réelle,
+  détaillées dans `specs/002-source-garmin/tasks.md` (notes T011/T012/T033) :
+  la distinction Garmin entre durée déplacée (`movingDuration`) et durée
+  écoulée (`elapsedDuration`), et l'absence d'un appel Garmin équivalent à
+  « détail d'une activité » côté Strava (le détail d'une sortie est lu depuis
+  le cache local déjà synchronisé, pas re-demandé au réseau).
+- Hors périmètre de la fonctionnalité 002, laissés pour une itération
+  suivante si besoin : cadence, puissance et tracé GPS pour les activités
+  Garmin (noms de champs confirmés mais pas encore câblés — voir
+  `src/domain/schemas.ts`).
+- Référence visuelle de la fonctionnalité 001 (conservée à titre historique) :
+  `specs/001-dashboard-strava/design/maquette-tableau-de-bord.html`.
 
 ## Contexte technique retenu
 
-Décidé lors du cadrage, à confirmer en phase `/plan` :
-
-- Front statique Vite + React + TypeScript strict
-- Une fonction serverless unique pour l'échange de tokens OAuth (le
-  `client_secret` Strava ne peut pas vivre côté navigateur)
-- Hébergement en palier gratuit, scale-to-zero
+- Front statique Vite + React + TypeScript strict (inchangé depuis 001)
+- Plus de fonction serverless ni de flux OAuth : le service qui parle à
+  Garmin (`garmin-service/`, Python) tourne en local, sur la machine de
+  l'utilisateur, et n'écoute que sur `127.0.0.1`
+- Coût d'exploitation nul par construction : tout tourne en local, rien n'est
+  hébergé à distance (`specs/002-source-garmin/plan.md`, décision D1)

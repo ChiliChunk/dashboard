@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Activity, SyncCursor } from "../domain/types";
-import { QuotaExceededError, RequestQuota } from "./quota";
+import { fetchActivitiesSince } from "./garmin";
 import { clearDatabase, getAllActivities, getSyncCursor, putActivities, putSyncCursor } from "./store";
-import { fetchActivitiesSince } from "./strava";
 
-export type SyncStatus = "idle" | "syncing" | "synced" | "offline" | "quota-exceeded" | "error";
+export type SyncStatus = "idle" | "syncing" | "synced" | "offline" | "error";
 
 interface SyncState {
   status: SyncStatus;
@@ -18,8 +17,13 @@ function isOffline(): boolean {
   return typeof navigator !== "undefined" && navigator.onLine === false;
 }
 
-/** Orchestration de la synchronisation incrémentale (CA6.2, CA6.4, CA6.5). */
-export function useSync(accessToken: string | null, athleteId: number | null) {
+/**
+ * Orchestration de la récupération incrémentale contre le service Garmin
+ * local (CA1.3, CA1.4). Un seul compte étant pris en charge (spec, section
+ * 3), `SyncCursor.athleteId` ne sert plus à cloisonner le cache : il vaut
+ * toujours 0.
+ */
+export function useSync() {
   const [state, setState] = useState<SyncState>({
     status: "idle",
     activities: [],
@@ -27,72 +31,57 @@ export function useSync(accessToken: string | null, athleteId: number | null) {
     lastSyncAt: null,
     errorMessage: null,
   });
-  const quotaRef = useRef(new RequestQuota());
 
-  const runSync = useCallback(
-    async (forceFullResync: boolean) => {
-      if (!accessToken || athleteId === null) return;
+  const runSync = useCallback(async (forceFullResync: boolean) => {
+    if (isOffline()) {
+      const cached = await getAllActivities();
+      setState((previous) => ({ ...previous, status: "offline", activities: cached }));
+      return;
+    }
 
-      if (isOffline()) {
-        const cached = await getAllActivities();
-        setState((previous) => ({ ...previous, status: "offline", activities: cached }));
-        return;
+    setState((previous) => ({ ...previous, status: "syncing" }));
+
+    if (forceFullResync) {
+      await clearDatabase();
+    }
+
+    const existingCursor: SyncCursor | null = forceFullResync ? null : await getSyncCursor();
+    const after = existingCursor?.lastActivityStart ?? 0;
+
+    try {
+      const activities = await fetchActivitiesSince(after);
+      await putActivities(activities);
+
+      let latestStart = after;
+      for (const activity of activities) {
+        const startEpoch = Math.floor(activity.startedAt.getTime() / 1000);
+        if (startEpoch > latestStart) latestStart = startEpoch;
       }
 
-      setState((previous) => ({ ...previous, status: "syncing" }));
+      const cursor: SyncCursor = {
+        athleteId: 0,
+        lastActivityStart: latestStart,
+        lastSyncAt: Date.now(),
+        complete: true,
+      };
+      await putSyncCursor(cursor);
 
-      if (forceFullResync) {
-        await clearDatabase();
-      }
-
-      const existingCursor: SyncCursor | null = forceFullResync ? null : await getSyncCursor();
-      const after = existingCursor?.lastActivityStart ?? 0;
-
-      try {
-        let syncedCount = 0;
-        let latestStart = after;
-
-        for await (const { activities, headers } of fetchActivitiesSince(accessToken, after)) {
-          quotaRef.current.recordHeaders(
-            headers.get("X-RateLimit-Usage"),
-            headers.get("X-RateLimit-Limit"),
-          );
-          quotaRef.current.checkAndRecord();
-
-          await putActivities(activities);
-          syncedCount += activities.length;
-          for (const activity of activities) {
-            const startEpoch = Math.floor(activity.startedAt.getTime() / 1000);
-            if (startEpoch > latestStart) latestStart = startEpoch;
-          }
-
-          const cached = await getAllActivities();
-          setState((previous) => ({ ...previous, activities: cached, syncedCount }));
-        }
-
-        const cursor: SyncCursor = {
-          athleteId,
-          lastActivityStart: latestStart,
-          lastSyncAt: Date.now(),
-          complete: true,
-        };
-        await putSyncCursor(cursor);
-
-        setState((previous) => ({ ...previous, status: "synced", lastSyncAt: cursor.lastSyncAt }));
-      } catch (error) {
-        if (error instanceof QuotaExceededError) {
-          setState((previous) => ({ ...previous, status: "quota-exceeded" }));
-          return;
-        }
-        setState((previous) => ({
-          ...previous,
-          status: "error",
-          errorMessage: error instanceof Error ? error.message : "Erreur de synchronisation inconnue.",
-        }));
-      }
-    },
-    [accessToken, athleteId],
-  );
+      const allCached = await getAllActivities();
+      setState((previous) => ({
+        ...previous,
+        status: "synced",
+        activities: allCached,
+        syncedCount: activities.length,
+        lastSyncAt: cursor.lastSyncAt,
+      }));
+    } catch (error) {
+      setState((previous) => ({
+        ...previous,
+        status: "error",
+        errorMessage: error instanceof Error ? error.message : "Erreur de synchronisation inconnue.",
+      }));
+    }
+  }, []);
 
   useEffect(() => {
     getAllActivities().then((cached) => {

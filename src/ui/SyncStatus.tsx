@@ -29,9 +29,6 @@ export function SyncStatus({
       {status === "offline" && (
         <p>Hors ligne : les données affichées proviennent du cache local.</p>
       )}
-      {status === "quota-exceeded" && (
-        <p>Quota Strava atteint. La synchronisation reprendra automatiquement plus tard.</p>
-      )}
       {status === "error" && errorMessage && <p>Erreur de synchronisation : {errorMessage}</p>}
       {status === "synced" && lastSyncAt !== null && (
         <p>Dernière synchronisation : {dateFormatter.format(lastSyncAt)}</p>

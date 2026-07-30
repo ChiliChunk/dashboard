@@ -46,25 +46,30 @@ export function PeriodHeader({ period, filters, onFiltersChange, children }: Per
 
   return (
     <div className="card">
-      <p className="label">Période</p>
-      <h2>{period.label}</h2>
-      {children}
+      <div className="period-header-top">
+        <div>
+          <p className="label">Période</p>
+          <h2>{period.label}</h2>
+        </div>
+        <div className="period-header-controls">
+          {children}
+          <fieldset className="sport-filter">
+            <legend className="label">Filtrer par sport</legend>
+            {ALL_SPORTS.map((sport) => (
+              <label key={sport} className="sport-toggle" data-sport={sport}>
+                <input
+                  type="checkbox"
+                  checked={filters.sports.includes(sport)}
+                  onChange={() => toggleSport(sport)}
+                />
+                {SPORT_LABELS[sport]}
+              </label>
+            ))}
+          </fieldset>
+        </div>
+      </div>
 
-      <fieldset>
-        <legend className="label">Filtrer par sport</legend>
-        {ALL_SPORTS.map((sport) => (
-          <label key={sport} style={{ marginRight: "12px" }}>
-            <input
-              type="checkbox"
-              checked={filters.sports.includes(sport)}
-              onChange={() => toggleSport(sport)}
-            />
-            {SPORT_LABELS[sport]}
-          </label>
-        ))}
-      </fieldset>
-
-      <div>
+      <div className="date-filters">
         <label>
           Du{" "}
           <input
@@ -77,7 +82,7 @@ export function PeriodHeader({ period, filters, onFiltersChange, children }: Per
               })
             }
           />
-        </label>{" "}
+        </label>
         <label>
           Au{" "}
           <input
@@ -94,15 +99,15 @@ export function PeriodHeader({ period, filters, onFiltersChange, children }: Per
       </div>
 
       {hasActiveFilters && (
-        <div>
+        <div className="active-filters">
           <p className="label">Filtres actifs</p>
           {filters.sports.map((sport) => (
-            <button key={sport} type="button" onClick={() => clearSport(sport)}>
+            <button key={sport} type="button" className="chip" onClick={() => clearSport(sport)}>
               {SPORT_LABELS[sport]} ✕
             </button>
           ))}
           {(filters.from !== null || filters.to !== null) && (
-            <button type="button" onClick={clearDates}>
+            <button type="button" className="chip" onClick={clearDates}>
               Dates ✕
             </button>
           )}

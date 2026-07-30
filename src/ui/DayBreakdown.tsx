@@ -24,7 +24,7 @@ export function DayBreakdown({ period, activities }: DayBreakdownProps) {
   return (
     <div className="card">
       <p className="label">Répartition par jour</p>
-      <ul style={{ display: "flex", gap: "12px", listStyle: "none", padding: 0, margin: 0 }}>
+      <ul className="day-breakdown-list">
         {days.map((day) => {
           const dayActivities = activities.filter((activity) =>
             isSameDay(activity.startedAtLocal, day),

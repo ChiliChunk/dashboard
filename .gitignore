@@ -20,4 +20,6 @@ npm-debug.log*
 
 .wrangler/
 .dev.vars
-!.dev.vars.example
+
+garmin-service/.env
+garmin-service/__pycache__/

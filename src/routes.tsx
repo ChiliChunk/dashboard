@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { Route, Switch } from "wouter";
 import { useUrlFilters } from "./data/filters";
-import { useSession } from "./data/session";
 import { useSync } from "./data/sync";
 import { applyFilters } from "./domain/filter";
 import { ActivityDetail } from "./ui/ActivityDetail";
@@ -10,14 +9,12 @@ import { Summary } from "./ui/Summary";
 import { VolumeChart } from "./ui/VolumeChart";
 
 /**
- * Point de composition unique : la session et la synchronisation ne sont
- * appelées qu'ici. Les dupliquer dans Summary ET ActivityList relancerait
- * deux boucles de synchronisation indépendantes et doublerait la consommation
- * du quota Strava (article IV) — c'est ce que ce composant évite.
+ * Point de composition unique : la synchronisation n'est appelée qu'ici. La
+ * dupliquer dans Summary ET ActivityList relancerait deux boucles de
+ * synchronisation indépendantes — c'est ce que ce composant évite.
  */
 function HomePage() {
-  const { session } = useSession();
-  const sync = useSync(session?.accessToken ?? null, session?.athleteId ?? null);
+  const sync = useSync();
   const [filters, setFilters] = useUrlFilters();
 
   const filteredActivities = useMemo(
@@ -26,7 +23,7 @@ function HomePage() {
   );
 
   return (
-    <div>
+    <div className="stack">
       <Summary
         allActivities={sync.activities}
         filteredActivities={filteredActivities}
@@ -48,16 +45,11 @@ function ActivityDetailPage() {
   return <ActivityDetail />;
 }
 
-function AuthDonePage() {
-  return <div>Connexion en cours (à venir)</div>;
-}
-
 export function AppRoutes() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/activity/:id" component={ActivityDetailPage} />
-      <Route path="/auth/done" component={AuthDonePage} />
     </Switch>
   );
 }

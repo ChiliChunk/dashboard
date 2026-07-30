@@ -72,7 +72,7 @@ export function Summary({
   }
 
   return (
-    <div>
+    <div className="stack">
       <PeriodHeader period={period} filters={filters} onFiltersChange={onFiltersChange}>
         <select
           value={periodKind}
@@ -91,43 +91,49 @@ export function Summary({
       ) : currentActivities.length === 0 ? (
         <EmptyState variant="empty-period" />
       ) : (
-        <div className="card">
-          <div>
-            <p className="label">Sorties</p>
-            <p className="value">{comparison.current.count}</p>
-            {hasComparison && <p>{signed(comparison.delta.count, (v) => String(v))} vs période précédente</p>}
+        <div className="stack">
+          <div className="stat-grid">
+            <div className="card stat">
+              <p className="label">Sorties</p>
+              <p className="value">{comparison.current.count}</p>
+              {hasComparison && (
+                <p className="caption">
+                  {signed(comparison.delta.count, (v) => String(v))} vs période précédente
+                </p>
+              )}
+            </div>
+            <div className="card stat">
+              <p className="label">Distance</p>
+              <p className="value">{formatDistance(comparison.current.totalDistance)}</p>
+              {hasComparison && (
+                <p className="caption">
+                  {signed(comparison.delta.totalDistance, (v) => `${(v / 1000).toFixed(1)} km`)} vs
+                  période précédente
+                </p>
+              )}
+            </div>
+            <div className="card stat">
+              <p className="label">D+</p>
+              <p className="value">{formatElevation(comparison.current.totalElevationGain)}</p>
+              {hasComparison && (
+                <p className="caption">
+                  {signed(comparison.delta.totalElevationGain, (v) => `${Math.round(v)} m`)} vs
+                  période précédente
+                </p>
+              )}
+            </div>
+            <div className="card stat">
+              <p className="label">Durée</p>
+              <p className="value">{formatDuration(comparison.current.totalMovingTime)}</p>
+              {hasComparison && (
+                <p className="caption">
+                  {signed(comparison.delta.totalMovingTime, (v) => `${Math.round(v / 60)} min`)} vs
+                  période précédente
+                </p>
+              )}
+            </div>
           </div>
-          <div>
-            <p className="label">Distance</p>
-            <p className="value">{formatDistance(comparison.current.totalDistance)}</p>
-            {hasComparison && (
-              <p>
-                {signed(comparison.delta.totalDistance, (v) => `${(v / 1000).toFixed(1)} km`)} vs
-                période précédente
-              </p>
-            )}
-          </div>
-          <div>
-            <p className="label">D+</p>
-            <p className="value">{formatElevation(comparison.current.totalElevationGain)}</p>
-            {hasComparison && (
-              <p>
-                {signed(comparison.delta.totalElevationGain, (v) => `${Math.round(v)} m`)} vs
-                période précédente
-              </p>
-            )}
-          </div>
-          <div>
-            <p className="label">Durée</p>
-            <p className="value">{formatDuration(comparison.current.totalMovingTime)}</p>
-            {hasComparison && (
-              <p>
-                {signed(comparison.delta.totalMovingTime, (v) => `${Math.round(v / 60)} min`)} vs
-                période précédente
-              </p>
-            )}
-          </div>
-          <p>
+          <p className="muted">
             Répartition : course à pied {bySport.run.count}, vélo {bySport.ride.count}, randonnée{" "}
             {bySport.hike.count}
             {bySport.other.count > 0 ? `, autre ${bySport.other.count}` : ""}

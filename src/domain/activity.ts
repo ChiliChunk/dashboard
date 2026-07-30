@@ -1,4 +1,4 @@
-import type { StravaActivityRaw } from "./schemas";
+import type { GarminActivityRaw, StravaActivityRaw } from "./schemas";
 import type { Activity, SportKind } from "./types";
 
 const SPORT_MAP: Record<string, SportKind> = {
@@ -48,5 +48,51 @@ export function normalizeActivity(raw: StravaActivityRaw): Activity {
     averageCadence: optionalOrNull(raw.average_cadence),
     polyline: raw.map?.summary_polyline || null,
     isManual: raw.manual,
+  };
+}
+
+const GARMIN_SPORT_MAP: Record<string, SportKind> = {
+  running: "run",
+  trail_running: "run",
+  track_running: "run",
+  treadmill_running: "run",
+  virtual_run: "run",
+  cycling: "ride",
+  road_biking: "ride",
+  mountain_biking: "ride",
+  gravel_cycling: "ride",
+  virtual_ride: "ride",
+  indoor_cycling: "ride",
+  hiking: "hike",
+};
+
+function toGarminSportKind(typeKey: string): SportKind {
+  return GARMIN_SPORT_MAP[typeKey] ?? "other";
+}
+
+/**
+ * Contrairement à `normalizeActivity` (Strava), la cadence, la puissance, le
+ * tracé GPS et le caractère manuel d'une activité Garmin ne sont pas encore
+ * câblés : leurs champs sources exacts restent à confirmer contre une vraie
+ * réponse (plan, section 8, risques). Une absence y est donc délibérée, pas
+ * un oubli — CA2.3 l'exige : jamais de valeur inventée.
+ */
+export function normalizeGarminActivity(raw: GarminActivityRaw): Activity {
+  return {
+    id: raw.activityId,
+    name: raw.activityName,
+    sport: toGarminSportKind(raw.activityType.typeKey),
+    sportRaw: raw.activityType.typeKey,
+    startedAt: new Date(`${raw.startTimeGMT.replace(" ", "T")}Z`),
+    startedAtLocal: new Date(raw.startTimeLocal.replace(" ", "T")),
+    distance: positiveOrNull(raw.distance),
+    movingTime: positiveOrNull(raw.movingDuration),
+    elapsedTime: positiveOrNull(raw.elapsedDuration),
+    elevationGain: optionalOrNull(raw.elevationGain),
+    averageHeartrate: optionalOrNull(raw.averageHR),
+    averageWatts: null,
+    averageCadence: null,
+    polyline: null,
+    isManual: false,
   };
 }

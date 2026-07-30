@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "wouter";
-import { useSession } from "../data/session";
-import { fetchActivityDetail } from "../data/strava";
+import { getActivityById } from "../data/store";
 import { decodePolyline } from "../domain/polyline";
 import type { Activity, SportKind } from "../domain/types";
 import { formatDistance, formatDuration, formatElevation, formatPace } from "../domain/units";
@@ -20,19 +19,27 @@ const dateTimeFormatter = new Intl.DateTimeFormat("fr-FR", {
   timeStyle: "short",
 });
 
-/** Détail d'une sortie (CA4.2 → CA4.6). L'affichage du tracé lui-même est T052, en attente de l'arbitrage D5. */
+/**
+ * Détail d'une sortie (CA4.2 → CA4.6), lu depuis les activités Garmin déjà
+ * synchronisées localement (aucun appel réseau dédié : voir note sur
+ * `getActivityById`, src/data/store.ts).
+ */
 export function ActivityDetail() {
   const { id } = useParams<{ id: string }>();
-  const { session } = useSession();
   const [activity, setActivity] = useState<Activity | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!session || !id) return;
+    if (!id) return;
     let cancelled = false;
-    fetchActivityDetail(session.accessToken, Number(id))
+    getActivityById(Number(id))
       .then((result) => {
-        if (!cancelled) setActivity(result);
+        if (cancelled) return;
+        if (result) {
+          setActivity(result);
+        } else {
+          setLoadError("Impossible de charger cette sortie pour le moment.");
+        }
       })
       .catch(() => {
         if (!cancelled) setLoadError("Impossible de charger cette sortie pour le moment.");
@@ -40,7 +47,7 @@ export function ActivityDetail() {
     return () => {
       cancelled = true;
     };
-  }, [session, id]);
+  }, [id]);
 
   if (loadError) {
     return (
@@ -89,10 +96,6 @@ export function ActivityDetail() {
       ) : (
         <p>Aucun tracé disponible pour cette sortie.</p>
       )}
-
-      <a href={`https://www.strava.com/activities/${activity.id}`} target="_blank" rel="noreferrer">
-        Ouvrir sur Strava
-      </a>
     </div>
   );
 }

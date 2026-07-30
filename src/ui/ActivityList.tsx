@@ -35,7 +35,7 @@ function SortButton({
 }) {
   const isActive = field === activeField;
   return (
-    <button type="button" onClick={() => onChange(field)}>
+    <button type="button" className={isActive ? "chip chip-active" : "chip"} onClick={() => onChange(field)}>
       {label}
       {isActive ? (direction === "asc" ? " ↑" : " ↓") : ""}
     </button>
@@ -81,7 +81,10 @@ export function ActivityList({ activities }: ActivityListProps) {
         <SortButton label="Durée" field="duration" activeField={sortField} direction={sortDirection} onChange={toggleSort} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: GRID_TEMPLATE, gap: "8px", fontWeight: 500 }}>
+      <div
+        className="table-head"
+        style={{ display: "grid", gridTemplateColumns: GRID_TEMPLATE, gap: "8px" }}
+      >
         <span>Date</span>
         <span>Nom</span>
         <span>Sport</span>
@@ -98,6 +101,7 @@ export function ActivityList({ activities }: ActivityListProps) {
             return (
               <div
                 key={activity.id}
+                className="table-row"
                 style={{
                   position: "absolute",
                   top: 0,
@@ -113,7 +117,9 @@ export function ActivityList({ activities }: ActivityListProps) {
               >
                 <span>{dateFormatter.format(activity.startedAtLocal)}</span>
                 <span>{activity.name}</span>
-                <span>{SPORT_LABELS[activity.sport]}</span>
+                <span className="badge" data-sport={activity.sport}>
+                  {SPORT_LABELS[activity.sport]}
+                </span>
                 <span>{formatDistance(activity.distance) ?? "—"}</span>
                 <span>{formatDuration(activity.movingTime) ?? "—"}</span>
                 <span>{formatElevation(activity.elevationGain) ?? "—"}</span>

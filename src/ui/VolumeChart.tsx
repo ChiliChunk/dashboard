@@ -189,13 +189,13 @@ export function VolumeChart({ activities }: VolumeChartProps) {
       </div>
 
       {focusedIndex !== null && timeline[focusedIndex] && (
-        <p role="status">
+        <p className="caption" role="status">
           {timeline[focusedIndex]!.label} : {(values[focusedIndex] ?? 0).toFixed(1)}{" "}
           {METRIC_LABELS[metric]}
         </p>
       )}
 
-      <p>
+      <p className="muted">
         Moyenne : {average.toFixed(1)} {METRIC_LABELS[metric]} / {unitLabel}
       </p>
       <p className="label">

@@ -1,7 +1,11 @@
 import { openDB, type IDBPDatabase } from "idb";
 import type { Activity, SyncCursor } from "../domain/types";
 
-export const ACTIVITY_DATABASE_NAME = "strava-dashboard";
+// Nom volontairement changé (ancien : "strava-dashboard") : ouvrir une base au
+// nouveau nom abandonne de fait tout historique Strava resté en cache,
+// conformément au cas limite « historique Strava déjà présent localement »
+// (specs/002-source-garmin/spec.md, section 5).
+export const ACTIVITY_DATABASE_NAME = "garmin-dashboard";
 const DATABASE_VERSION = 1;
 const ACTIVITIES_STORE = "activities";
 const META_STORE = "meta";
@@ -36,6 +40,18 @@ export async function putActivities(activities: Activity[]): Promise<void> {
 export async function getAllActivities(): Promise<Activity[]> {
   const db = await openDashboardDb();
   return db.getAll(ACTIVITIES_STORE);
+}
+
+/**
+ * Contrairement à Strava, la bibliothèque cliente Garmin n'a pas d'appel qui
+ * renvoie le résumé d'une seule activité (l'équivalent le plus proche renvoie
+ * des séries de mesures, pas les champs de synthèse) : le détail d'une sortie
+ * est donc lu depuis les activités déjà synchronisées, jamais re-demandé.
+ */
+export async function getActivityById(id: number): Promise<Activity | null> {
+  const db = await openDashboardDb();
+  const activity = await db.get(ACTIVITIES_STORE, id);
+  return (activity as Activity | undefined) ?? null;
 }
 
 export async function getSyncCursor(): Promise<SyncCursor | null> {

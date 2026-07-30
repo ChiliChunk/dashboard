@@ -16,6 +16,7 @@
   --fs-value: 32px;
   --fs-body: 14px;
   --fs-label: 11px;
+  --fs-caption: 12px;
 }
 
 @font-face {
@@ -38,6 +39,24 @@
   box-sizing: border-box;
 }
 
+h1,
+h2,
+h3,
+p,
+dl,
+dt,
+dd,
+ul,
+fieldset,
+legend {
+  margin: 0;
+  padding: 0;
+}
+
+fieldset {
+  border: none;
+}
+
 body {
   margin: 0;
   background: var(--bg-page);
@@ -47,10 +66,35 @@ body {
   line-height: 1.5;
 }
 
+#root {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+h2 {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Empilement vertical à espacement constant entre sections (D8 : densité). */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
 .card {
+  display: flex;
+  flex-direction: column;
   background: var(--bg-card);
   border-radius: var(--radius-card);
   padding: 24px 28px;
+}
+
+.card > * + * {
+  margin-top: 12px;
 }
 
 .label {
@@ -66,7 +110,275 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.muted {
+  color: var(--text-muted);
+}
+
+.caption {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Contrôles natifs */
+
+button,
+select,
+input {
+  font: inherit;
+  color: var(--text);
+}
+
+button {
+  background: var(--bg-track);
+  border: 1px solid transparent;
+  border-radius: var(--radius-ctl);
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: color-mix(in srgb, var(--bg-track) 80%, white 12%);
+}
+
+select,
+input[type="date"] {
+  background: var(--bg-track);
+  border: 1px solid var(--bg-track);
+  border-radius: var(--radius-ctl);
+  padding: 6px 10px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg-page);
+  font-weight: 600;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: color-mix(in srgb, var(--accent) 85%, white 15%);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--bg-track);
+  border: none;
+  color: var(--text);
+  font-size: var(--fs-caption);
+}
+
+.chip-active {
+  background: var(--accent);
+  color: var(--bg-page);
+}
+
+/* Bandeau de période (PeriodHeader) */
+
+.period-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.period-header-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.sport-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.sport-filter legend {
+  width: 100%;
+}
+
+.sport-toggle {
+  --sport-color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--bg-track);
+  cursor: pointer;
+  user-select: none;
+}
+
+.sport-toggle input {
+  accent-color: var(--sport-color);
+  cursor: pointer;
+}
+
+.sport-toggle[data-sport="run"] {
+  --sport-color: var(--sport-run);
+}
+.sport-toggle[data-sport="ride"] {
+  --sport-color: var(--sport-ride);
+}
+.sport-toggle[data-sport="hike"] {
+  --sport-color: var(--sport-hike);
+}
+.sport-toggle[data-sport="other"] {
+  --sport-color: var(--sport-other);
+}
+
+.sport-toggle:has(input:checked) {
+  background: color-mix(in srgb, var(--sport-color) 30%, var(--bg-card));
+  box-shadow: inset 0 0 0 1px var(--sport-color);
+}
+
+.date-filters {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.active-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Synthèse (Summary) */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.stat {
+  gap: 4px;
+}
+
+/* Répartition par jour (DayBreakdown) */
+
+.day-breakdown-list {
+  display: flex;
+  gap: 12px;
+}
+
+.day-breakdown-list li {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+}
+
+.day-breakdown-list li::before {
+  content: "";
+  display: block;
+  width: 32px;
+  border-radius: var(--radius-ctl);
+}
+
+.day-breakdown-list li[data-state="active"]::before {
+  height: 64px;
+  background: var(--accent);
+}
+
+.day-breakdown-list li[data-state="empty"]::before,
+.day-breakdown-list li[data-state="future"]::before {
+  height: 4px;
+  background: var(--bg-track);
+  align-self: center;
+  margin: 30px 0;
+}
+
+.day-breakdown-list li p:first-child {
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.day-breakdown-list li p:last-child {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+}
+
+/* Liste des sorties (ActivityList) */
+
+.table-head {
+  text-transform: uppercase;
+  font-size: var(--fs-label);
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  padding-bottom: 8px !important;
+  border-bottom: 1px solid var(--bg-track);
+}
+
+.table-row {
+  border-bottom: 1px solid var(--bg-track);
+}
+
+.table-row:hover {
+  background: var(--bg-track);
+}
+
+.badge {
+  --sport-color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: var(--fs-caption);
+  background: color-mix(in srgb, var(--sport-color) 25%, var(--bg-card));
+}
+
+.badge[data-sport="run"] {
+  --sport-color: var(--sport-run);
+}
+.badge[data-sport="ride"] {
+  --sport-color: var(--sport-ride);
+}
+.badge[data-sport="hike"] {
+  --sport-color: var(--sport-hike);
+}
+.badge[data-sport="other"] {
+  --sport-color: var(--sport-other);
+}
+
+/* Détail d'une sortie (ActivityDetail) */
+
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 16px;
+}
+
+dt {
+  color: var(--text-muted);
+  font-size: var(--fs-label);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  align-self: center;
+}
+
+@media (max-width: 480px) {
+  #root {
+    padding: 20px 16px 48px;
+  }
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
