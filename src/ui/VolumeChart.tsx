@@ -1,8 +1,20 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  Tooltip,
+  type ChartData,
+  type ChartOptions,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
 import { resolvePeriod, type PeriodKind } from "../domain/period";
-import { buildAxisScale } from "../domain/scale";
 import { buildTimeline, type Granularity, type VolumeMetric } from "../domain/timeline";
 import type { Activity, SportKind } from "../domain/types";
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 const PERIOD_OPTIONS: Array<{ kind: PeriodKind; label: string }> = [
   { kind: "current-week", label: "Semaine en cours" },
@@ -25,12 +37,66 @@ const SPORT_LABELS: Record<SportKind, string> = {
   hike: "Randonnée",
   other: "Autre",
 };
-const SPORT_FILL: Record<SportKind, string> = {
-  run: "var(--sport-run)",
-  ride: "url(#pattern-ride)",
-  hike: "url(#pattern-hike)",
-  other: "url(#pattern-other)",
+const SPORT_VARS: Record<SportKind, string> = {
+  run: "--sport-run",
+  ride: "--sport-ride",
+  hike: "--sport-hike",
+  other: "--sport-other",
 };
+
+/** Le canvas ne résout pas `var(--x)` : il lui faut la couleur littérale du thème. */
+function cssVar(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+/**
+ * Motif *et* teinte, jamais la teinte seule : les sports restent distinguables
+ * sans percevoir la couleur. Le canvas n'ayant pas d'équivalent aux `<pattern>`
+ * SVG, chaque motif est peint dans une tuile de 6×6 répétée — les traits vont
+ * de coin à coin pour que le raccord entre tuiles reste invisible.
+ */
+function sportFill(sport: SportKind): string | CanvasPattern {
+  const color = cssVar(SPORT_VARS[sport]);
+  if (sport === "run") return color; // Aplat : la référence à laquelle les motifs se comparent.
+
+  const tile = document.createElement("canvas");
+  tile.width = 6;
+  tile.height = 6;
+  const ctx = tile.getContext("2d");
+  if (!ctx) return color;
+
+  const ink = cssVar("--bg-page");
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, 6, 6);
+  ctx.strokeStyle = ink;
+  ctx.fillStyle = ink;
+
+  switch (sport) {
+    case "ride":
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 6);
+      ctx.lineTo(6, 0);
+      ctx.stroke();
+      break;
+    case "hike":
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(6, 6);
+      ctx.moveTo(0, 6);
+      ctx.lineTo(6, 0);
+      ctx.stroke();
+      break;
+    case "other":
+      ctx.beginPath();
+      ctx.arc(3, 3, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+  }
+
+  return ctx.createPattern(tile, "repeat") ?? color;
+}
 
 function metricUnitValue(metric: VolumeMetric, rawValue: number): number {
   switch (metric) {
@@ -47,50 +113,103 @@ interface VolumeChartProps {
   activities: Activity[];
 }
 
-const CHART_WIDTH = 640;
-const CHART_HEIGHT = 220;
-const BASELINE_Y = CHART_HEIGHT - 20;
-const PLOT_HEIGHT = CHART_HEIGHT - 40;
-const BAR_GAP = 4;
-
 /**
- * Graphique de progression écrit à la main en SVG (décision D3 du plan) :
- * choix de grandeur (CA5.2), ventilation par sport avec motif + teinte
- * (CA5.7, ENF6), survol/focus donnant la valeur exacte (CA5.6), axe non
- * tronqué (CA5.5), moyenne affichée (CA5.8).
+ * Graphique de progression (Chart.js) : barres empilées par sport, chaque sport
+ * activable/désactivable depuis la légende, et un survol qui répond sur le
+ * segment pointé plutôt que sur la barre entière.
  */
 export function VolumeChart({ activities }: VolumeChartProps) {
   const [periodKind, setPeriodKind] = useState<PeriodKind>("current-year");
   const [granularity, setGranularity] = useState<Granularity>("month");
   const [metric, setMetric] = useState<VolumeMetric>("distance");
-  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
-  const chartWrapRef = useRef<HTMLDivElement>(null);
 
   const period = useMemo(() => resolvePeriod(periodKind), [periodKind]);
   const timeline = buildTimeline(activities, period, granularity, metric);
-  const values = timeline.map((bucket) => metricUnitValue(metric, bucket.value));
-  const scale = buildAxisScale(values);
-  const average = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0;
-  const barWidth = timeline.length > 0 ? CHART_WIDTH / timeline.length - BAR_GAP : 0;
+  const totals = timeline.map((bucket) => metricUnitValue(metric, bucket.value));
+  const average = totals.length > 0 ? totals.reduce((a, b) => a + b, 0) / totals.length : 0;
   const unitLabel = granularity === "week" ? "semaine" : "mois";
 
-  /** Position du survol/focus en coordonnées écran, relatives au conteneur du graphique. */
-  function showTooltip(index: number, target: SVGRectElement) {
-    setFocusedIndex(index);
-    const wrapRect = chartWrapRef.current?.getBoundingClientRect();
-    if (!wrapRect) return;
-    const barRect = target.getBoundingClientRect();
-    setTooltipPos({
-      x: barRect.left + barRect.width / 2 - wrapRect.left,
-      y: barRect.top - wrapRect.top,
-    });
-  }
+  // Les motifs sont coûteux à peindre : une seule fois, pas à chaque rendu.
+  const fills = useMemo(() => {
+    const entries = SPORT_ORDER.map((sport) => [sport, sportFill(sport)] as const);
+    return Object.fromEntries(entries) as Record<SportKind, string | CanvasPattern>;
+  }, []);
+  const theme = useMemo(
+    () => ({
+      text: cssVar("--text"),
+      muted: cssVar("--text-muted"),
+      track: cssVar("--bg-track"),
+      page: cssVar("--bg-page"),
+    }),
+    [],
+  );
 
-  function hideTooltip() {
-    setFocusedIndex(null);
-    setTooltipPos(null);
-  }
+  const data: ChartData<"bar"> = {
+    labels: timeline.map((bucket) => bucket.label),
+    datasets: SPORT_ORDER.map((sport) => ({
+      label: SPORT_LABELS[sport],
+      data: timeline.map((bucket) => metricUnitValue(metric, bucket.bySport[sport])),
+      backgroundColor: fills[sport],
+      borderWidth: 0,
+    })),
+  };
+
+  const options: ChartOptions<"bar"> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    // « point » + « intersect » : le survol répond au segment réellement pointé,
+    // donc un tooltip différent selon l'endroit de la barre.
+    interaction: { mode: "point", intersect: true },
+    scales: {
+      x: {
+        stacked: true,
+        grid: { display: false },
+        ticks: { color: theme.muted },
+        border: { color: theme.track },
+      },
+      y: {
+        stacked: true,
+        // Origine non tronquée : une barre deux fois plus haute vaut deux fois plus.
+        beginAtZero: true,
+        grid: { color: theme.track },
+        ticks: { color: theme.muted },
+        border: { display: false },
+      },
+    },
+    plugins: {
+      legend: {
+        // Chart.js gère lui-même l'activation/désactivation au clic sur une entrée.
+        position: "bottom",
+        labels: { color: theme.text, boxWidth: 12, boxHeight: 12, padding: 16 },
+      },
+      tooltip: {
+        backgroundColor: theme.page,
+        borderColor: theme.track,
+        borderWidth: 1,
+        titleColor: theme.text,
+        bodyColor: theme.text,
+        footerColor: theme.muted,
+        padding: 10,
+        displayColors: true,
+        callbacks: {
+          label: (item) =>
+            ` ${item.dataset.label} : ${(item.parsed.y ?? 0).toFixed(1)} ${METRIC_LABELS[metric]}`,
+          // Le total ne compte que les sports encore affichés, pour rester
+          // cohérent avec ce que la barre montre après un filtrage.
+          footer: (items) => {
+            const item = items[0];
+            if (!item) return "";
+            const total = item.chart.data.datasets.reduce((sum, dataset, index) => {
+              if (!item.chart.isDatasetVisible(index)) return sum;
+              const value = dataset.data[item.dataIndex];
+              return sum + (typeof value === "number" ? value : 0);
+            }, 0);
+            return `Total : ${total.toFixed(1)} ${METRIC_LABELS[metric]}`;
+          },
+        },
+      },
+    },
+  };
 
   return (
     <div className="card">
@@ -125,103 +244,13 @@ export function VolumeChart({ activities }: VolumeChartProps) {
         </label>
       </div>
 
-      <div className="chart-wrap" ref={chartWrapRef}>
-        <svg
-          viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
-          role="img"
+      <div className="chart-wrap">
+        <Bar
+          data={data}
+          options={options}
           aria-label={`Graphique de ${METRIC_LABELS[metric].toLowerCase()} par ${unitLabel}`}
-        >
-          <defs>
-            <pattern id="pattern-ride" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
-              <rect width="6" height="6" fill="var(--sport-ride)" />
-              <line x1="0" y1="0" x2="0" y2="6" stroke="var(--bg-page)" strokeWidth="2" />
-            </pattern>
-            <pattern id="pattern-hike" patternUnits="userSpaceOnUse" width="6" height="6">
-              <rect width="6" height="6" fill="var(--sport-hike)" />
-              <line x1="0" y1="0" x2="6" y2="6" stroke="var(--bg-page)" strokeWidth="1" />
-              <line x1="6" y1="0" x2="0" y2="6" stroke="var(--bg-page)" strokeWidth="1" />
-            </pattern>
-            <pattern id="pattern-other" patternUnits="userSpaceOnUse" width="6" height="6">
-              <rect width="6" height="6" fill="var(--sport-other)" />
-              <circle cx="3" cy="3" r="1" fill="var(--bg-page)" />
-            </pattern>
-          </defs>
-
-          <line x1={0} y1={BASELINE_Y} x2={CHART_WIDTH} y2={BASELINE_Y} stroke="var(--text-muted)" />
-
-          {timeline.map((bucket, index) => {
-            const x = index * (barWidth + BAR_GAP);
-            let cumulative = 0;
-            const segments = SPORT_ORDER.map((sport) => {
-              const sportRawValue = bucket.bySport[sport];
-              const sportValue = metricUnitValue(metric, sportRawValue);
-              if (sportValue <= 0) return null;
-              const segmentHeight = scale.max > 0 ? (sportValue / scale.max) * PLOT_HEIGHT : 0;
-              const y = BASELINE_Y - cumulative - segmentHeight;
-              cumulative += segmentHeight;
-              return { sport, y, segmentHeight };
-            });
-
-            return (
-              <g key={bucket.start.toISOString()}>
-                {segments.map(
-                  (segment) =>
-                    segment && (
-                      <rect
-                        key={segment.sport}
-                        x={x}
-                        y={segment.y}
-                        width={Math.max(barWidth, 1)}
-                        height={segment.segmentHeight}
-                        fill={SPORT_FILL[segment.sport]}
-                      />
-                    ),
-                )}
-                <rect
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`${bucket.label} : ${(values[index] ?? 0).toFixed(1)} ${METRIC_LABELS[metric]}`}
-                  x={x}
-                  y={BASELINE_Y - cumulative}
-                  width={Math.max(barWidth, 1)}
-                  height={Math.max(cumulative, PLOT_HEIGHT)}
-                  fill="transparent"
-                  onMouseEnter={(event) => showTooltip(index, event.currentTarget)}
-                  onFocus={(event) => showTooltip(index, event.currentTarget)}
-                  onMouseLeave={hideTooltip}
-                  onBlur={hideTooltip}
-                />
-              </g>
-            );
-          })}
-        </svg>
-
-        {focusedIndex !== null && tooltipPos && timeline[focusedIndex] && (
-          <div className="chart-tooltip" role="status" style={{ left: tooltipPos.x, top: tooltipPos.y }}>
-            {timeline[focusedIndex]!.label} : {(values[focusedIndex] ?? 0).toFixed(1)} {METRIC_LABELS[metric]}
-          </div>
-        )}
+        />
       </div>
-
-      <div style={{ display: "flex", gap: "12px" }}>
-        {SPORT_ORDER.map((sport) => (
-          <span key={sport} style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "13px" }}>
-            {/* Un `<span>` avec `background: url(#pattern-x)` ne peut pas afficher les motifs
-                SVG définis dans le graphique : seul un contexte SVG résout ces références. */}
-            <svg width="12" height="12" aria-hidden="true">
-              <rect width="12" height="12" fill={SPORT_FILL[sport]} />
-            </svg>
-            {SPORT_LABELS[sport]}
-          </span>
-        ))}
-      </div>
-
-      <p className="muted">
-        Moyenne : {average.toFixed(1)} {METRIC_LABELS[metric]} / {unitLabel}
-      </p>
-      <p className="label">
-        Axe vertical : 0 à {scale.max.toFixed(0)} — origine non tronquée
-      </p>
     </div>
   );
 }

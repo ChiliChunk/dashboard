@@ -442,21 +442,11 @@ li[data-state="future"] .day-bar-fill {
 
 /* Graphique de progression (VolumeChart) */
 
+/* Chart.js dimensionne son canvas d'après le conteneur : il lui faut une
+   hauteur explicite, sinon le graphique s'effondre à zéro. */
 .chart-wrap {
   position: relative;
-}
-
-.chart-tooltip {
-  position: absolute;
-  transform: translate(-50%, -100%) translateY(-8px);
-  background: var(--bg-page);
-  border: 1px solid var(--bg-track);
-  border-radius: var(--radius-ctl);
-  padding: 4px 10px;
-  font-size: var(--fs-caption);
-  white-space: nowrap;
-  pointer-events: none;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
+  height: 280px;
 }
 
 /* Détail d'une sortie (ActivityDetail) */
