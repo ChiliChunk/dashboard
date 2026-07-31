@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { compareSummaries, summarizeBySport } from "../domain/aggregate";
+import { compareSummaries } from "../domain/aggregate";
 import { isWithinPeriod, isWithinPreviousPeriod, resolvePeriod } from "../domain/period";
 import type { Activity } from "../domain/types";
 import { formatDistance, formatDuration, formatElevation } from "../domain/units";
@@ -35,19 +35,7 @@ export function Summary({ allActivities, status }: SummaryProps) {
     () => compareSummaries(currentActivities, previousActivities),
     [currentActivities, previousActivities],
   );
-  const bySport = useMemo(() => summarizeBySport(currentActivities), [currentActivities]);
   const hasComparison = period.previousStart !== null;
-  const sportBreakdownLabel = (() => {
-    const parts = [
-      ["course à pied", bySport.run.count],
-      ["vélo", bySport.ride.count],
-      ["randonnée", bySport.hike.count],
-      ["autre", bySport.other.count],
-    ]
-      .filter(([, count]) => (count as number) > 0)
-      .map(([label, count]) => `${label} ${count}`);
-    return parts.length > 0 ? `Répartition : ${parts.join(", ")}` : "Répartition : aucune sortie";
-  })();
 
   if (status === "cleared") {
     return <EmptyState variant="empty-storage" />;
@@ -109,7 +97,7 @@ export function Summary({ allActivities, status }: SummaryProps) {
         </div>
       )}
 
-      <DayBreakdown period={period} activities={currentActivities} title={sportBreakdownLabel} />
+      <DayBreakdown period={period} activities={currentActivities} />
 
       <RecentWeeks activities={allActivities} />
     </div>

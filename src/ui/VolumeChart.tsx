@@ -50,52 +50,12 @@ function cssVar(name: string): string {
 }
 
 /**
- * Motif *et* teinte, jamais la teinte seule : les sports restent distinguables
- * sans percevoir la couleur. Le canvas n'ayant pas d'équivalent aux `<pattern>`
- * SVG, chaque motif est peint dans une tuile de 6×6 répétée — les traits vont
- * de coin à coin pour que le raccord entre tuiles reste invisible.
+ * Aplat de couleur, sans motif : mêmes teintes que la répartition par jour, pour
+ * qu'un sport se reconnaisse d'un cadre à l'autre. La légende Chart.js nomme
+ * chaque sport, ce qui garde le graphique lisible sans percevoir la teinte.
  */
-function sportFill(sport: SportKind): string | CanvasPattern {
-  const color = cssVar(SPORT_VARS[sport]);
-  if (sport === "run") return color; // Aplat : la référence à laquelle les motifs se comparent.
-
-  const tile = document.createElement("canvas");
-  tile.width = 6;
-  tile.height = 6;
-  const ctx = tile.getContext("2d");
-  if (!ctx) return color;
-
-  const ink = cssVar("--bg-page");
-  ctx.fillStyle = color;
-  ctx.fillRect(0, 0, 6, 6);
-  ctx.strokeStyle = ink;
-  ctx.fillStyle = ink;
-
-  switch (sport) {
-    case "ride":
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(0, 6);
-      ctx.lineTo(6, 0);
-      ctx.stroke();
-      break;
-    case "hike":
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(6, 6);
-      ctx.moveTo(0, 6);
-      ctx.lineTo(6, 0);
-      ctx.stroke();
-      break;
-    case "other":
-      ctx.beginPath();
-      ctx.arc(3, 3, 1.2, 0, Math.PI * 2);
-      ctx.fill();
-      break;
-  }
-
-  return ctx.createPattern(tile, "repeat") ?? color;
+function sportFill(sport: SportKind): string {
+  return cssVar(SPORT_VARS[sport]);
 }
 
 function metricUnitValue(metric: VolumeMetric, rawValue: number): number {
@@ -129,10 +89,10 @@ export function VolumeChart({ activities }: VolumeChartProps) {
   const average = totals.length > 0 ? totals.reduce((a, b) => a + b, 0) / totals.length : 0;
   const unitLabel = granularity === "week" ? "semaine" : "mois";
 
-  // Les motifs sont coûteux à peindre : une seule fois, pas à chaque rendu.
+  // Les teintes viennent du thème, lu au montage plutôt qu'à chaque rendu.
   const fills = useMemo(() => {
     const entries = SPORT_ORDER.map((sport) => [sport, sportFill(sport)] as const);
-    return Object.fromEntries(entries) as Record<SportKind, string | CanvasPattern>;
+    return Object.fromEntries(entries) as Record<SportKind, string>;
   }, []);
   const theme = useMemo(
     () => ({

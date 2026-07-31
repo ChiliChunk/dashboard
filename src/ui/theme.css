@@ -370,14 +370,25 @@ input[type="date"] {
   align-items: flex-end;
 }
 
+/* Empilement par sport, du bas vers le haut : chaque segment reçoit sa part de
+   la hauteur via `flex-grow` (fixé en style inline, proportionnel à la valeur). */
 .day-bar-fill {
   width: 100%;
   border-radius: var(--radius-ctl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column-reverse;
 }
 
-/* Hauteur proportionnelle à la distance du jour (fixée en style inline). */
+.day-bar-seg {
+  display: block;
+  flex-basis: 0;
+  min-height: 3px; /* Une part minuscule reste visible plutôt que d'être écrasée. */
+}
+
+/* Hauteur proportionnelle à la grandeur choisie (fixée en style inline). */
 li[data-state="active"] .day-bar-fill {
-  background: var(--accent);
+  background: var(--bg-track);
 }
 
 /* Vide ou futur : simple trait, centré dans le même espace que la barre. */
@@ -396,6 +407,82 @@ li[data-state="future"] .day-bar-fill {
 .day-breakdown-list li p:last-child {
   font-size: var(--fs-caption);
   color: var(--text-muted);
+}
+
+.day-breakdown-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sport-legend {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-left: 10px;
+}
+
+.sport-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sport-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+/* Aplats de couleur, sans motif : sur des segments aussi étroits la texture
+   brouillait plus la lecture qu'elle ne l'aidait. Le libellé écrit de la
+   légende porte l'information pour qui ne perçoit pas la teinte. Mêmes couleurs
+   que le graphique de progression, qui garde ses motifs. */
+.sport-swatch[data-sport="run"],
+.day-bar-seg[data-sport="run"] {
+  background: var(--sport-run);
+}
+
+.sport-swatch[data-sport="ride"],
+.day-bar-seg[data-sport="ride"] {
+  background: var(--sport-ride);
+}
+
+.sport-swatch[data-sport="hike"],
+.day-bar-seg[data-sport="hike"] {
+  background: var(--sport-hike);
+}
+
+.sport-swatch[data-sport="other"],
+.day-bar-seg[data-sport="other"] {
+  background: var(--sport-other);
+}
+
+/* Bascule de grandeur : km ou heures. */
+.metric-toggle {
+  display: inline-flex;
+  background: var(--bg-track);
+  border-radius: var(--radius-ctl);
+  padding: 2px;
+  gap: 2px;
+}
+
+.metric-toggle button {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  padding: 4px 12px;
+  border-radius: calc(var(--radius-ctl) - 2px);
+  cursor: pointer;
+}
+
+.metric-toggle button[aria-pressed="true"] {
+  background: var(--bg-card);
+  color: var(--text);
+  font-weight: 500;
 }
 
 /* Liste des sorties (ActivityList) */
