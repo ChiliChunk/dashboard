@@ -26,15 +26,6 @@ describe("resolvePeriod", () => {
     expect(resolvePeriod("all-time", WEDNESDAY).start).toBeNull();
   });
 
-  it("la période précédente de l'année en cours est l'année précédente exacte", () => {
-    const period = resolvePeriod("current-year", WEDNESDAY);
-    expect(period.previousStart?.getFullYear()).toBe(2025);
-  });
-
-  it("l'historique complet n'a pas de période précédente comparable", () => {
-    const period = resolvePeriod("all-time", WEDNESDAY);
-    expect(period.previousStart).toBeNull();
-  });
 });
 
 describe("lastWeeksBuckets", () => {

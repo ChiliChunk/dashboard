@@ -1,0 +1,169 @@
+{
+  "meta": {
+    "version": "5.0",
+    "genere_le": "2026-07-31",
+    "metriques": ["heures", "denivele_positif"],
+    "objectif": {
+      "nom": "Trail 44 km / 1500 D+",
+      "distance_km": 44,
+      "denivele_positif_m": 1500,
+      "semaines_avant_course": 12,
+      "temps_estime_fourchette": "5h00 - 5h45",
+      "densite_course_dplus_par_heure": 273
+    },
+    "unites": {
+      "heures": "decimal",
+      "duree_min": "minutes",
+      "denivele": "metres"
+    },
+    "lecture_des_compteurs": {
+      "base": "Heures et D+ cumules sur les sorties a pied obligatoires. Contrat minimum de la semaine.",
+      "avec_optionnelle": "Totaux si la sortie optionnelle est courue a pied. Si elle est faite en velo ou en randonnee, le compteur base reste la reference et l'activite compte uniquement dans heures_totales_max.",
+      "dplus_par_heure": "Densite de denivele de la semaine. Indicateur de specificite : plus il se rapproche de 273, plus la semaine ressemble a la course."
+    },
+    "structure": {
+      "sorties_pied_obligatoires": 3,
+      "sortie_optionnelle": 1,
+      "sports_optionnelle": ["course", "randonnee", "velo"],
+      "commentaire": "Aucune seance n'est prescrite et aucun kilometrage n'est fixe. Deux cibles par semaine : un nombre d'heures et un cumul de D+."
+    },
+    "reference_base": {
+      "source": "Export Garmin, 120 activites du 2025-11-20 au 2026-07-30",
+      "moyenne_juin_2026": {"heures_pied": 4.6, "dplus_hebdo": 1100},
+      "densite_dplus_par_heure": {"mediane_toutes_sorties": 63, "percentile_75": 259, "max": 430},
+      "plus_grosse_sortie": {"heures": 5.8, "dplus": 2185, "densite": 377, "date": "2026-06-28"},
+      "constat": "La mediane a 63 D+/h montre que la moitie des sorties sont sur du plat. Le D+ hebdo se construira donc presque entierement sur la sortie longue."
+    },
+    "regles": [
+      "Deux cibles par semaine, les heures d'abord : si tu dois choisir, tiens les heures et laisse le D+ en retrait.",
+      "Ne jamais atteindre la cible de D+ en une seule sortie au-dela de 60% du total hebdo : le risque de blessure est dans la concentration, pas dans le cumul.",
+      "Le D+ est le seul indicateur qui capte la charge en descente, qui est ce qui fait exploser les quadriceps sur ce format.",
+      "Plafond volontaire : 5h45 et 1700 D+ sur les 3 sorties obligatoires, 6h30 et 1900 D+ optionnelle comprise.",
+      "La plus longue sortie doit representer 40 a 45% des heures a pied de la semaine.",
+      "Les valeurs de D+ ne sont comparables que mesurees par la meme montre : ne pas comparer avec une trace importee ou un profil officiel de course.",
+      "Semaine manquee : ne pas rattraper, reprendre la semaine suivante telle quelle.",
+      "En cas de doute sur la fatigue, sacrifier la sortie optionnelle avant de toucher aux 3 sorties de base.",
+      "Le velo et la randonnee ne remplacent jamais une des 3 sorties a pied."
+    ],
+    "contraintes_utilisateur": {
+      "vacances": "Semaines 6 a 8",
+      "plafond_sorties_pied": {"6": 3, "7": 2, "8": 3},
+      "traitement": "Bloc de maintien. Si les vacances sont en montagne, les cibles de D+ seront faciles a depasser : dans ce cas tenir les heures et laisser le D+ filer, c'est du bonus."
+    }
+  },
+  "semaines": [
+    {
+      "numero": 1, "bloc": "1 - Reconstruction", "type_semaine": "progressive", "sorties_pied": 3,
+      "base": {"heures": 4.25, "duree_min": 255, "affichage": "4h15", "dplus": 700, "dplus_par_heure": 165},
+      "avec_optionnelle": {"heures": 5.0, "duree_min": 300, "affichage": "5h00", "dplus": 900, "dplus_par_heure": 180},
+      "optionnelle": {"disponible": true, "si_course": {"duree_min": 45, "dplus": 200}, "alternative": ["randonnee", "velo"], "heures_max": 2.5},
+      "heures_totales_max": 6.75,
+      "note": "Retour au niveau de juin. D+ volontairement modeste, la priorite est la regularite."
+    },
+    {
+      "numero": 2, "bloc": "1 - Reconstruction", "type_semaine": "progressive", "sorties_pied": 3,
+      "base": {"heures": 4.75, "duree_min": 285, "affichage": "4h45", "dplus": 900, "dplus_par_heure": 189},
+      "avec_optionnelle": {"heures": 5.5, "duree_min": 330, "affichage": "5h30", "dplus": 1150, "dplus_par_heure": 209},
+      "optionnelle": {"disponible": true, "si_course": {"duree_min": 45, "dplus": 250}, "alternative": ["randonnee", "velo"], "heures_max": 2.5},
+      "heures_totales_max": 7.25,
+      "note": null
+    },
+    {
+      "numero": 3, "bloc": "1 - Reconstruction", "type_semaine": "progressive", "sorties_pied": 3,
+      "base": {"heures": 5.25, "duree_min": 315, "affichage": "5h15", "dplus": 1100, "dplus_par_heure": 210},
+      "avec_optionnelle": {"heures": 6.25, "duree_min": 375, "affichage": "6h15", "dplus": 1400, "dplus_par_heure": 224},
+      "optionnelle": {"disponible": true, "si_course": {"duree_min": 60, "dplus": 300}, "alternative": ["randonnee", "velo"], "heures_max": 3.0},
+      "heures_totales_max": 8.25,
+      "note": "Heures equivalentes a ta meilleure semaine de l'annee."
+    },
+    {
+      "numero": 4, "bloc": "1 - Reconstruction", "type_semaine": "allegee", "sorties_pied": 3,
+      "base": {"heures": 3.5, "duree_min": 210, "affichage": "3h30", "dplus": 600, "dplus_par_heure": 171},
+      "avec_optionnelle": {"heures": 4.25, "duree_min": 255, "affichage": "4h15", "dplus": 800, "dplus_par_heure": 188},
+      "optionnelle": {"disponible": true, "si_course": {"duree_min": 45, "dplus": 200}, "alternative": ["randonnee", "velo"], "heures_max": 2.0},
+      "heures_totales_max": 5.5,
+      "note": "Recuperation : -35% sur les heures et sur le D+."
+    },
+    {
+      "numero": 5, "bloc": "2 - Developpement", "type_semaine": "pic_bloc", "sorties_pied": 3,
+      "base": {"heures": 5.5, "duree_min": 330, "affichage": "5h30", "dplus": 1300, "dplus_par_heure": 236},
+      "avec_optionnelle": {"heures": 6.5, "duree_min": 390, "affichage": "6h30", "dplus": 1600, "dplus_par_heure": 246},
+      "optionnelle": {"disponible": true, "si_course": {"duree_min": 60, "dplus": 300}, "alternative": ["randonnee", "velo"], "heures_max": 3.0},
+      "heures_totales_max": 8.5,
+      "note": "Semaine la plus chargee avant les vacances. Sortie longue 2h15-2h30 avec 700-800 D+ : tester sac et ravitaillement."
+    },
+    {
+      "numero": 6, "bloc": "3 - Vacances (maintien)", "type_semaine": "maintien_contraint", "sorties_pied": 3, "plafond_impose": 3,
+      "base": {"heures": 5.0, "duree_min": 300, "affichage": "5h00", "dplus": 1200, "dplus_par_heure": 240},
+      "avec_optionnelle": {"heures": 5.0, "duree_min": 300, "affichage": "5h00", "dplus": 1200, "dplus_par_heure": 240},
+      "optionnelle": {"disponible": false, "raison": "plafond de 3 sorties a pied", "alternative": ["randonnee", "velo"], "heures_max": 4.0},
+      "heures_totales_max": 9.0,
+      "note": "3 sorties dont une longue de 2h15-2h30. Le D+ des randonnees ne compte pas dans le compteur pied, mais il travaille les memes descentes."
+    },
+    {
+      "numero": 7, "bloc": "3 - Vacances (maintien)", "type_semaine": "reduite_contrainte", "sorties_pied": 2, "plafond_impose": 2,
+      "base": {"heures": 3.75, "duree_min": 225, "affichage": "3h45", "dplus": 900, "dplus_par_heure": 240},
+      "avec_optionnelle": {"heures": 3.75, "duree_min": 225, "affichage": "3h45", "dplus": 900, "dplus_par_heure": 240},
+      "optionnelle": {"disponible": false, "raison": "plafond de 2 sorties a pied", "alternative": ["randonnee", "velo"], "heures_max": 5.0},
+      "heures_totales_max": 8.75,
+      "note": "2 sorties : une longue de 2h-2h15, une courte. Semaine de recuperation deguisee, sans consequence."
+    },
+    {
+      "numero": 8, "bloc": "3 - Vacances (maintien)", "type_semaine": "maintien_contraint", "sorties_pied": 3, "plafond_impose": 3,
+      "base": {"heures": 5.0, "duree_min": 300, "affichage": "5h00", "dplus": 1200, "dplus_par_heure": 240},
+      "avec_optionnelle": {"heures": 5.0, "duree_min": 300, "affichage": "5h00", "dplus": 1200, "dplus_par_heure": 240},
+      "optionnelle": {"disponible": false, "raison": "plafond de 3 sorties a pied", "alternative": ["randonnee", "velo"], "heures_max": 4.0},
+      "heures_totales_max": 9.0,
+      "note": "Meme format que la semaine 6."
+    },
+    {
+      "numero": 9, "bloc": "4 - Specifique", "type_semaine": "progressive", "sorties_pied": 3,
+      "base": {"heures": 5.5, "duree_min": 330, "affichage": "5h30", "dplus": 1400, "dplus_par_heure": 255},
+      "avec_optionnelle": {"heures": 6.25, "duree_min": 375, "affichage": "6h15", "dplus": 1650, "dplus_par_heure": 264},
+      "optionnelle": {"disponible": true, "si_course": {"duree_min": 45, "dplus": 250}, "alternative": ["randonnee", "velo"], "heures_max": 2.5},
+      "heures_totales_max": 8.0,
+      "note": "Retour au plein volume. Sortie longue 2h30-2h45 avec 800 D+. La densite atteint celle de la course."
+    },
+    {
+      "numero": 10, "bloc": "4 - Specifique", "type_semaine": "pic", "sorties_pied": 3,
+      "base": {"heures": 5.75, "duree_min": 345, "affichage": "5h45", "dplus": 1700, "dplus_par_heure": 296},
+      "avec_optionnelle": {"heures": 6.5, "duree_min": 390, "affichage": "6h30", "dplus": 1900, "dplus_par_heure": 292},
+      "optionnelle": {"disponible": true, "si_course": {"duree_min": 45, "dplus": 200}, "alternative": ["randonnee", "velo"], "heures_max": 2.5},
+      "heures_totales_max": 8.25,
+      "note": "Pic du plan : plus de D+ que la course, en plus de temps. Sortie longue 3h-3h15 avec 900-1000 D+, en repetition generale (heure de depart, materiel, nutrition du jour J)."
+    },
+    {
+      "numero": 11, "bloc": "5 - Affutage", "type_semaine": "affutage", "sorties_pied": 3,
+      "base": {"heures": 3.5, "duree_min": 210, "affichage": "3h30", "dplus": 800, "dplus_par_heure": 229},
+      "avec_optionnelle": {"heures": 4.0, "duree_min": 240, "affichage": "4h00", "dplus": 900, "dplus_par_heure": 225},
+      "optionnelle": {"disponible": true, "si_course": {"duree_min": 30, "dplus": 100}, "alternative": ["velo"], "heures_max": 1.5},
+      "heures_totales_max": 5.0,
+      "note": "-40% sur les heures, -55% sur le D+. Garder de la densite mais peu de volume : c'est la descente qui met le plus longtemps a recuperer."
+    },
+    {
+      "numero": 12, "bloc": "5 - Course", "type_semaine": "course", "sorties_pied": 3,
+      "base": {"heures": 6.75, "duree_min": 405, "affichage": "6h45", "dplus": 1600, "dplus_par_heure": 237},
+      "avec_optionnelle": {"heures": 6.75, "duree_min": 405, "affichage": "6h45", "dplus": 1600, "dplus_par_heure": 237},
+      "optionnelle": {"disponible": false, "raison": "semaine de course"},
+      "heures_totales_max": 6.75,
+      "note": "Dont la course : 5h30 et 1500 D+. Le reste sur 2 sorties courtes et plates en debut de semaine."
+    }
+  ],
+  "totaux": {
+    "base": {"heures": 58.5, "affichage": "58h30", "dplus": 13400},
+    "avec_optionnelle": {"heures": 64.75, "affichage": "64h45", "dplus": 15200},
+    "hors_course": {"heures_base": 53.0, "dplus_base": 11900},
+    "moyenne_hebdo_base": {"heures": 4.88, "dplus": 1117},
+    "pic_base": {"heures": 5.75, "dplus": 1700}
+  },
+  "strategie_course": {
+    "temps_estime": "5h00 a 5h45",
+    "reperes": [
+      "Partir volontairement lent sur la premiere heure, l'allure confortable du depart est toujours trop rapide.",
+      "Marcher les montees au-dela de 12-15% de pente.",
+      "Retenir les descentes de la premiere moitie : c'est la que se joue l'etat des quadriceps sur les 15 derniers kilometres.",
+      "60 a 80 g de glucides par heure des la premiere heure.",
+      "400 a 600 ml/h de boisson selon la temperature, avec 500 a 800 mg/L de sodium."
+    ]
+  }
+}

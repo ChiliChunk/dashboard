@@ -9,6 +9,13 @@
   --sport-ride: oklch(0.66 0.125 210);
   --sport-hike: #7dbf9b;
   --sport-other: #e0a86f;
+  /* Cibles du plan : les heures reprennent la teinte de la course à pied — ce
+     sont des heures de course — et le D+ une teinte distincte, jamais utilisée
+     pour un sport. */
+  --plan-hours: #9184d9;
+  --plan-dplus: #e0a86f;
+  --quota-ok: #7dbf9b;
+  --quota-ko: #d9615f;
   --radius-card: 8px;
   --radius-ctl: 6px;
 
@@ -122,6 +129,77 @@ h2 {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Infobulles
+   Remplacent l'attribut `title` natif, dont le style n'est pas modifiable et
+   dont le délai d'apparition est celui du système. Le texte vit dans
+   `data-tooltip` ; `pointer-events: none` évite qu'elle ne s'interpose entre
+   le curseur et ce qu'elle décrit. */
+
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  width: max-content;
+  max-width: 240px;
+  padding: 7px 10px;
+  border-radius: var(--radius-ctl);
+  background: var(--bg-page);
+  border: 1px solid var(--bg-track);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+  /* Une infobulle peut être posée sur un `.label` en capitales : ne pas en hériter. */
+  color: var(--text);
+  font-size: var(--fs-caption);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  line-height: 1.4;
+  white-space: pre-line;
+  text-align: left;
+}
+
+/* Pointe de l'infobulle : un carré tourné, dont deux bords portent la bordure. */
+[data-tooltip]::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  z-index: 21;
+  width: 9px;
+  height: 9px;
+  transform: translateX(-50%) rotate(45deg);
+  background: var(--bg-page);
+  border-right: 1px solid var(--bg-track);
+  border-bottom: 1px solid var(--bg-track);
+}
+
+[data-tooltip]::after,
+[data-tooltip]::before {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:hover::before,
+[data-tooltip]:focus-visible::after,
+[data-tooltip]:focus-visible::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-tooltip]::after,
+  [data-tooltip]::before {
+    transition: none;
+  }
 }
 
 /* Contrôles natifs */
@@ -306,8 +384,11 @@ input[type="date"] {
   gap: 16px;
 }
 
+/* Rembourrage horizontal resserré : l'anneau de cible et ses chiffres doivent
+   tenir côte à côte sur une seule ligne dans une carte de cette largeur. */
 .stat {
   gap: 4px;
+  padding: 24px 20px;
 }
 
 /* Une case par semaine sur les 4 dernières (RecentWeeks) */
@@ -343,6 +424,298 @@ input[type="date"] {
 .week-kpis dd {
   font-weight: 500;
   font-variant-numeric: tabular-nums;
+}
+
+.week-stat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Marqueur de quotas : la couleur double le glyphe, elle ne le remplace pas. */
+.quota-mark {
+  font-size: var(--fs-body);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.quota-mark[data-status="both"],
+.quota-mark[data-status="one"] {
+  color: var(--quota-ok);
+}
+
+.quota-mark[data-status="none"] {
+  color: var(--quota-ko);
+}
+
+/* Cible du plan sous un KPI de synthèse (TargetRing) */
+
+.target-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* Le cadran superpose les chiffres à l'anneau : il lui faut un repère de position. */
+.target-ring-dial {
+  position: relative;
+  display: flex;
+}
+
+.target-ring svg {
+  flex-shrink: 0;
+  /* L'arc part de midi et tourne dans le sens horaire, pas de trois heures. */
+  transform: rotate(-90deg);
+}
+
+.target-ring-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Les chiffres ne se coupent jamais : « 130 / 700 m » perd son sens sur deux lignes. */
+  white-space: nowrap;
+  line-height: 1.1;
+}
+
+/* Remplace la grande valeur de la carte : c'est la lecture principale. */
+.target-ring-done {
+  font-size: 26px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.target-ring-target {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.target-ring-track {
+  stroke: var(--bg-track);
+}
+
+.target-ring-arc {
+  stroke: var(--accent);
+  transition: stroke-dashoffset 400ms ease;
+}
+
+.target-ring[data-metric="duration"] .target-ring-arc {
+  stroke: var(--plan-hours);
+}
+
+.target-ring[data-metric="elevation"] .target-ring-arc {
+  stroke: var(--plan-dplus);
+}
+
+/* Quota rempli : même vert que le marqueur des semaines révolues. */
+.target-ring[data-met="true"] .target-ring-arc {
+  stroke: var(--quota-ok);
+}
+
+/* Total tous sports : relégué en pied de carte, en petit. La lecture
+   principale est devenue la cible du plan, pas le cumul de la période. */
+.stat-total {
+  font-size: var(--fs-caption);
+  font-variant-numeric: tabular-nums;
+  /* Atténué : sans quoi deux nombres nus dans la même carte se disputeraient la lecture. */
+  color: var(--text-muted);
+}
+
+/* Ce qui porte une infobulle s'annonce comme tel au survol. */
+.stat [data-tooltip] {
+  cursor: help;
+}
+
+/* La grille étire toutes les cartes à la hauteur de la plus haute : le total
+   est collé en bas par `margin-top: auto`, et le vide se loge au milieu plutôt
+   qu'après la dernière ligne. */
+.stat-total {
+  margin-top: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .target-ring-arc {
+    transition: none;
+  }
+}
+
+/* Aperçu des 12 semaines du plan (PlanOutlook) */
+
+.plan-outlook-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.plan-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.plan-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.plan-swatch[data-metric="duration"] {
+  background: var(--plan-hours);
+}
+
+.plan-swatch[data-metric="elevation"] {
+  background: var(--plan-dplus);
+}
+
+/* Douze colonnes ; au-delà d'une certaine étroitesse elles défilent
+   horizontalement plutôt que de se réduire à des traits illisibles. */
+.plan-strip {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.plan-strip li {
+  flex: 1 0 44px;
+  display: flex;
+  list-style: none;
+}
+
+.plan-strip li[data-block-start="true"] {
+  border-left: 1px solid var(--bg-track);
+}
+
+/* Chaque semaine est un bouton : bouton natif pour le clavier et l'assistance,
+   dépouillé de l'apparence de bouton, qui n'aurait aucun sens sur une colonne. */
+.plan-week {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 2px 4px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-ctl);
+  cursor: pointer;
+}
+
+.plan-week:hover {
+  background: color-mix(in srgb, var(--bg-track) 55%, transparent);
+}
+
+/* Écoulé : présent mais en retrait, la lecture doit porter sur ce qui vient. */
+.plan-week[data-state="past"] {
+  opacity: 0.45;
+}
+
+.plan-week[data-state="past"]:hover,
+.plan-week[aria-pressed="true"][data-state="past"] {
+  opacity: 0.75;
+}
+
+/* Semaine en cours : repère permanent, indépendant de la sélection. */
+.plan-week[data-state="current"] .plan-week-number {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* Semaine sélectionnée : c'est elle que détaille le bloc du dessous. */
+.plan-week[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.plan-week[aria-pressed="true"] .plan-week-number {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* Hauteur fixe : les barres sont ancrées en bas, les numéros restent alignés. */
+.plan-bars {
+  height: var(--plan-bar-height, 84px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+}
+
+/* La barre entière est la cible ; le fond en creux est ce qui reste à faire. */
+.plan-bar {
+  position: relative;
+  width: 9px;
+  border-radius: 3px;
+  background: var(--bg-track);
+  overflow: hidden;
+}
+
+.plan-bar-done {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: block;
+  border-radius: 3px;
+}
+
+.plan-bar[data-metric="duration"] .plan-bar-done {
+  background: var(--plan-hours);
+}
+
+.plan-bar[data-metric="elevation"] .plan-bar-done {
+  background: var(--plan-dplus);
+}
+
+/* Semaine à venir : la cible est dessinée en plein, il n'y a encore rien de réalisé. */
+.plan-strip li[data-state="future"] .plan-bar[data-metric="duration"] {
+  background: color-mix(in srgb, var(--plan-hours) 55%, var(--bg-track));
+}
+
+.plan-strip li[data-state="future"] .plan-bar[data-metric="elevation"] {
+  background: color-mix(in srgb, var(--plan-dplus) 55%, var(--bg-track));
+}
+
+.plan-week-number {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Détail de la semaine sélectionnée : les deux cibles d'abord, en gros et en
+   gras — c'est le chiffre qu'on vient chercher —, le contexte ensuite. */
+.plan-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.plan-detail-targets {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.plan-detail-targets strong {
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.plan-detail-targets strong:first-child {
+  color: var(--plan-hours);
+}
+
+.plan-detail-targets strong:nth-child(2) {
+  color: var(--plan-dplus);
 }
 
 /* Répartition par jour (DayBreakdown) */
@@ -498,6 +871,11 @@ li[data-state="future"] .day-bar-fill {
 
 .table-row {
   border-bottom: 1px solid var(--bg-track);
+}
+
+/* Repère visuel entre semaines consécutives : une bande sur deux, discrète. */
+.table-row[data-week-stripe="alt"] {
+  background: color-mix(in srgb, var(--bg-track) 30%, transparent);
 }
 
 .table-row:hover {

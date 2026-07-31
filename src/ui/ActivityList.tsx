@@ -1,3 +1,4 @@
+import { startOfISOWeek } from "date-fns";
 import { useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { sortActivities, type SortDirection, type SortField } from "../domain/filter";
@@ -53,6 +54,26 @@ export function ActivityList({ activities }: ActivityListProps) {
     [activities, sortField, sortDirection],
   );
 
+  /**
+   * Alterne un repère visuel à chaque changement de semaine ISO rencontré en
+   * parcourant la liste triée (et non un simple index pair/impair) : la
+   * bande doit suivre la semaine même quand le tri n'est pas chronologique.
+   */
+  const weekStripes = useMemo(() => {
+    const stripes: number[] = [];
+    let currentWeekKey: number | null = null;
+    let stripeIndex = 0;
+    for (const activity of sorted) {
+      const weekKey = startOfISOWeek(activity.startedAtLocal).getTime();
+      if (currentWeekKey !== null && weekKey !== currentWeekKey) {
+        stripeIndex += 1;
+      }
+      currentWeekKey = weekKey;
+      stripes.push(stripeIndex % 2);
+    }
+    return stripes;
+  }, [sorted]);
+
   const virtualizer = useVirtualizer({
     count: sorted.length,
     getScrollElement: () => parentRef.current,
@@ -102,6 +123,7 @@ export function ActivityList({ activities }: ActivityListProps) {
               <div
                 key={activity.id}
                 className="table-row"
+                data-week-stripe={weekStripes[virtualRow.index] === 1 ? "alt" : undefined}
                 style={{
                   position: "absolute",
                   top: 0,

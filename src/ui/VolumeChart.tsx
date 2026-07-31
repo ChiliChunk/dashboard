@@ -30,6 +30,13 @@ const METRIC_LABELS: Record<VolumeMetric, string> = {
   elevation: "Dénivelé (m)",
 };
 
+/** Unité seule : « 42.3 km / mois » se lit mieux que le libellé d'axe complet. */
+const METRIC_UNITS: Record<VolumeMetric, string> = {
+  distance: "km",
+  duration: "h",
+  elevation: "m",
+};
+
 const SPORT_ORDER: SportKind[] = ["run", "ride", "hike", "other"];
 const SPORT_LABELS: Record<SportKind, string> = {
   run: "Course à pied",
@@ -75,8 +82,9 @@ interface VolumeChartProps {
 
 /**
  * Graphique de progression (Chart.js) : barres empilées par sport, chaque sport
- * activable/désactivable depuis la légende, et un survol qui répond sur le
- * segment pointé plutôt que sur la barre entière.
+ * activable/désactivable depuis la légende, un survol qui répond sur le segment
+ * pointé plutôt que sur la barre entière, et la moyenne par unité de temps sous
+ * le graphique.
  */
 export function VolumeChart({ activities }: VolumeChartProps) {
   const [periodKind, setPeriodKind] = useState<PeriodKind>("current-year");
@@ -211,6 +219,18 @@ export function VolumeChart({ activities }: VolumeChartProps) {
           aria-label={`Graphique de ${METRIC_LABELS[metric].toLowerCase()} par ${unitLabel}`}
         />
       </div>
+
+      {/*
+        Moyenne calculée sur la timeline entière : contrairement au total du
+        tooltip, elle ne suit pas les sports masqués depuis la légende, d'où la
+        mention « tous sports » plutôt qu'une valeur qui semblerait incohérente
+        après un filtrage.
+      */}
+      {timeline.length > 0 && (
+        <p className="caption">
+          Moyenne tous sports : {average.toFixed(1)} {METRIC_UNITS[metric]} / {unitLabel}
+        </p>
+      )}
     </div>
   );
 }

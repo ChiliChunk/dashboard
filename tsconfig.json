@@ -8,6 +8,9 @@
 
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
+    /* Le plan d'entraînement est conservé tel quel en JSON (document de
+       référence versionné) et importé directement par `src/domain/plan.ts`. */
+    "resolveJsonModule": true,
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,

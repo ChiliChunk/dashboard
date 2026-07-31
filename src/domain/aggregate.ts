@@ -7,12 +7,6 @@ export interface PeriodSummary {
   totalElevationGain: number;
 }
 
-export interface PeriodComparison {
-  current: PeriodSummary;
-  previous: PeriodSummary;
-  delta: PeriodSummary;
-}
-
 const EMPTY_SUMMARY: PeriodSummary = {
   count: 0,
   totalDistance: 0,
@@ -31,21 +25,6 @@ export function summarize(activities: Activity[]): PeriodSummary {
     }),
     { ...EMPTY_SUMMARY },
   );
-}
-
-export function compareSummaries(current: Activity[], previous: Activity[]): PeriodComparison {
-  const currentSummary = summarize(current);
-  const previousSummary = summarize(previous);
-  return {
-    current: currentSummary,
-    previous: previousSummary,
-    delta: {
-      count: currentSummary.count - previousSummary.count,
-      totalDistance: currentSummary.totalDistance - previousSummary.totalDistance,
-      totalDuration: currentSummary.totalDuration - previousSummary.totalDuration,
-      totalElevationGain: currentSummary.totalElevationGain - previousSummary.totalElevationGain,
-    },
-  };
 }
 
 export function summarizeBySport(activities: Activity[]): Record<SportKind, PeriodSummary> {

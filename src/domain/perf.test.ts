@@ -1,9 +1,9 @@
 import "fake-indexeddb/auto";
 import { describe, expect, it } from "vitest";
 import { clearDatabase, getAllActivities, putActivities } from "../data/store";
-import { compareSummaries, summarizeBySport } from "./aggregate";
+import { summarize, summarizeBySport } from "./aggregate";
 import { sortActivities } from "./filter";
-import { isWithinPeriod, isWithinPreviousPeriod, resolvePeriod } from "./period";
+import { isWithinPeriod, resolvePeriod } from "./period";
 import type { Activity } from "./types";
 
 function syntheticActivities(count: number): Activity[] {
@@ -43,10 +43,10 @@ describe("performance sur un historique de 5000 activités", () => {
     const cached = await getAllActivities();
     const period = resolvePeriod("current-year", new Date(2024, 6, 1));
     const current = cached.filter((activity) => isWithinPeriod(activity.startedAtLocal, period));
-    const previous = cached.filter((activity) =>
-      isWithinPreviousPeriod(activity.startedAtLocal, period),
-    );
-    compareSummaries(current, previous);
+    // Les deux passes d'agrégation que fait réellement la synthèse : le total
+    // toutes activités, puis le sous-ensemble à pied, seul à compter pour le plan.
+    summarize(current);
+    summarize(current.filter((activity) => activity.sport === "run"));
     summarizeBySport(current);
     const elapsed = performance.now() - start;
 

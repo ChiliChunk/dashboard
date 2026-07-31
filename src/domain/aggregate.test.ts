@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareSummaries, summarize, summarizeBySport } from "./aggregate";
+import { summarize, summarizeBySport } from "./aggregate";
 import type { Activity } from "./types";
 
 function activity(overrides: Partial<Activity> = {}): Activity {
@@ -45,21 +45,6 @@ describe("summarize", () => {
       totalDuration: 0,
       totalElevationGain: 0,
     });
-  });
-});
-
-describe("compareSummaries", () => {
-  it("calcule une variation signée par rapport à la période précédente (CA2.2)", () => {
-    const comparison = compareSummaries(
-      [activity({ distance: 12000 })],
-      [activity({ distance: 10000 })],
-    );
-    expect(comparison.delta.totalDistance).toBe(2000);
-    expect(comparison.delta.count).toBe(0);
-  });
-
-  it("donne une variation négative quand le volume baisse", () => {
-    expect(compareSummaries([], [activity()]).delta.count).toBe(-1);
   });
 });
 

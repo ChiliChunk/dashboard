@@ -17,8 +17,6 @@ export interface PeriodRange {
   label: string;
   start: Date | null;
   end: Date;
-  previousStart: Date | null;
-  previousEnd: Date | null;
 }
 
 export interface WeekBucket {
@@ -56,8 +54,6 @@ export function resolvePeriod(kind: PeriodKind, now: Date = new Date()): PeriodR
         label: `Semaine du ${format(start, "d MMMM", { locale: fr })} au ${format(end, "d MMMM yyyy", { locale: fr })}`,
         start,
         end,
-        previousStart: subWeeks(start, 1),
-        previousEnd: subWeeks(end, 1),
       };
     }
     case "last-30-days": {
@@ -68,8 +64,6 @@ export function resolvePeriod(kind: PeriodKind, now: Date = new Date()): PeriodR
         label: `30 derniers jours (${format(start, "d MMM", { locale: fr })} – ${format(end, "d MMM yyyy", { locale: fr })})`,
         start,
         end,
-        previousStart: subDays(start, 30),
-        previousEnd: start,
       };
     }
     case "current-year": {
@@ -80,8 +74,6 @@ export function resolvePeriod(kind: PeriodKind, now: Date = new Date()): PeriodR
         label: `Année ${format(now, "yyyy")}`,
         start,
         end,
-        previousStart: subYears(start, 1),
-        previousEnd: subYears(end, 1),
       };
     }
     case "previous-year": {
@@ -93,8 +85,6 @@ export function resolvePeriod(kind: PeriodKind, now: Date = new Date()): PeriodR
         label: `Année ${format(yearAgo, "yyyy")}`,
         start,
         end,
-        previousStart: subYears(start, 1),
-        previousEnd: subYears(end, 1),
       };
     }
     case "all-time":
@@ -103,8 +93,6 @@ export function resolvePeriod(kind: PeriodKind, now: Date = new Date()): PeriodR
         label: "Historique complet",
         start: null,
         end: now,
-        previousStart: null,
-        previousEnd: null,
       };
   }
 }
@@ -120,7 +108,3 @@ export function isWithinPeriod(date: Date, period: PeriodRange): boolean {
   return date >= period.start && date <= period.end;
 }
 
-export function isWithinPreviousPeriod(date: Date, period: PeriodRange): boolean {
-  if (period.previousStart === null || period.previousEnd === null) return false;
-  return date >= period.previousStart && date <= period.previousEnd;
-}
