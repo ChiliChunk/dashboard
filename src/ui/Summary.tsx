@@ -7,8 +7,24 @@ import { formatDistance, formatDuration, formatElevation } from "../domain/units
 import type { SyncStatus as SyncStatusValue } from "../data/sync";
 import { DayBreakdown } from "./DayBreakdown";
 import { EmptyState } from "./EmptyState";
+import { PlanOutlook } from "./PlanOutlook";
 import { RecentWeeks } from "./RecentWeeks";
 import { TargetRing } from "./TargetRing";
+
+/**
+ * Total toutes activités, en pied de carte. Il disparaît quand il répète déjà
+ * la valeur principale — une semaine sans vélo ni randonnée n'a rien à ajouter.
+ * La comparaison stricte suffit : le sous-ensemble à pied est sommé dans le même
+ * ordre que le tout, les activités écartées n'y ajoutant que des zéros.
+ */
+function StatTotal({ text, redundant }: { text: string | null; redundant: boolean }) {
+  if (redundant || text === null) return null;
+  return (
+    <p className="stat-total" data-tooltip="Total, toutes activités confondues">
+      Total&nbsp;: {text}
+    </p>
+  );
+}
 
 interface SummaryProps {
   /** Ensemble complet des activités connues (pour distinguer « compte vide » de « période vide »). */
@@ -67,18 +83,20 @@ export function Summary({ allActivities, status }: SummaryProps) {
               <p className="value" data-tooltip="Sorties de course à pied">
                 {currentRun.count}
               </p>
-              <p className="stat-total" data-tooltip="Total, tous sports confondus">
-                {total.count}
-              </p>
+              <StatTotal
+                text={String(total.count)}
+                redundant={total.count === currentRun.count}
+              />
             </div>
             <div className="card stat">
               <p className="label">Distance</p>
               <p className="value" data-tooltip="Distance parcourue en course à pied">
                 {formatDistance(currentRun.totalDistance)}
               </p>
-              <p className="stat-total" data-tooltip="Total, tous sports confondus">
-                {formatDistance(total.totalDistance)}
-              </p>
+              <StatTotal
+                text={formatDistance(total.totalDistance)}
+                redundant={total.totalDistance === currentRun.totalDistance}
+              />
             </div>
             {/* Sur les deux grandeurs pilotées par le plan, la cible passe au
                 premier plan et le total tous sports descend en pied de carte :
@@ -99,9 +117,10 @@ export function Summary({ allActivities, status }: SummaryProps) {
                   {formatElevation(currentRun.totalElevationGain)}
                 </p>
               )}
-              <p className="stat-total" data-tooltip="Total, tous sports confondus">
-                {formatElevation(total.totalElevationGain)}
-              </p>
+              <StatTotal
+                text={formatElevation(total.totalElevationGain)}
+                redundant={total.totalElevationGain === currentRun.totalElevationGain}
+              />
             </div>
             <div className="card stat">
               <p className="label">Durée</p>
@@ -119,15 +138,19 @@ export function Summary({ allActivities, status }: SummaryProps) {
                   {formatDuration(currentRun.totalDuration)}
                 </p>
               )}
-              <p className="stat-total" data-tooltip="Total, tous sports confondus">
-                {formatDuration(total.totalDuration)}
-              </p>
+              <StatTotal
+                text={formatDuration(total.totalDuration)}
+                redundant={total.totalDuration === currentRun.totalDuration}
+              />
             </div>
           </div>
         </div>
       )}
 
       <DayBreakdown period={period} activities={currentActivities} />
+
+      {/* Le plan passe avant le rétroviseur : ce qui attend prime sur ce qui est fait. */}
+      <PlanOutlook activities={allActivities} />
 
       <RecentWeeks activities={allActivities} />
     </div>

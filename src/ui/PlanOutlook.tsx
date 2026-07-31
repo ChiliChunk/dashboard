@@ -152,12 +152,6 @@ export function PlanOutlook({ activities }: PlanOutlookProps) {
         <p className="plan-detail-targets">
           <strong>{formatDuration(week.targetDuration)}</strong>
           <strong>{formatElevation(week.targetElevationGain)} D+</strong>
-          {progress && (
-            <span className="caption muted">
-              réalisé {formatDuration(progress.duration)} ·{" "}
-              {formatElevation(progress.elevationGain)}
-            </span>
-          )}
         </p>
         <p className="caption">
           Semaine {week.number} sur {PLAN_WEEKS.length}

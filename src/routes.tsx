@@ -2,7 +2,6 @@ import { Route, Switch } from "wouter";
 import type { SyncSnapshot } from "./data/sync";
 import { ActivityDetail } from "./ui/ActivityDetail";
 import { ActivityList } from "./ui/ActivityList";
-import { PlanOutlook } from "./ui/PlanOutlook";
 import { Summary } from "./ui/Summary";
 import { VolumeChart } from "./ui/VolumeChart";
 
@@ -10,7 +9,6 @@ function HomePage({ sync }: { sync: SyncSnapshot }) {
   return (
     <div className="stack">
       <Summary allActivities={sync.activities} status={sync.status} />
-      <PlanOutlook activities={sync.activities} />
       <VolumeChart activities={sync.activities} />
       <ActivityList activities={sync.activities} />
     </div>

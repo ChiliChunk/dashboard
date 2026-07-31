@@ -20,7 +20,7 @@
   --radius-ctl: 6px;
 
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --fs-value: 32px;
+  --fs-value: 38px;
   --fs-body: 14px;
   --fs-label: 11px;
   --fs-caption: 12px;
@@ -391,6 +391,21 @@ input[type="date"] {
   padding: 24px 20px;
 }
 
+/* La grandeur principale prend tout l'espace que la grille laisse à la carte
+   (toutes étirées sur la plus haute) et s'y centre dans les deux sens. Le
+   libellé reste en haut, le total en bas. */
+.stat .value,
+.stat .target-ring {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat .value {
+  text-align: center;
+}
+
 /* Une case par semaine sur les 4 dernières (RecentWeeks) */
 
 .week-stat {
@@ -520,9 +535,9 @@ input[type="date"] {
 /* Total tous sports : relégué en pied de carte, en petit. La lecture
    principale est devenue la cible du plan, pas le cumul de la période. */
 .stat-total {
-  font-size: var(--fs-caption);
+  font-size: var(--fs-body);
   font-variant-numeric: tabular-nums;
-  /* Atténué : sans quoi deux nombres nus dans la même carte se disputeraient la lecture. */
+  /* Atténué : sans quoi deux nombres dans la même carte se disputeraient la lecture. */
   color: var(--text-muted);
 }
 
