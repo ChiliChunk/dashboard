@@ -84,7 +84,7 @@ export function PlanOutlook({ activities }: PlanOutlookProps) {
   const detail = weeks.find((entry) => entry.week.number === selected) ?? weeks[0];
   if (detail === undefined) return null;
 
-  const { week, progress } = detail;
+  const { week } = detail;
   const hasOptional =
     week.optionalDuration !== week.targetDuration ||
     week.optionalElevationGain !== week.targetElevationGain;
@@ -96,7 +96,6 @@ export function PlanOutlook({ activities }: PlanOutlookProps) {
         <p className="caption plan-legend">
           <span className="plan-swatch" data-metric="duration" aria-hidden="true" /> heures
           <span className="plan-swatch" data-metric="elevation" aria-hidden="true" /> D+
-          <span className="muted">barre = cible, partie pleine = réalisé</span>
         </p>
       </div>
 

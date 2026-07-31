@@ -14,8 +14,8 @@
      pour un sport. */
   --plan-hours: #9184d9;
   --plan-dplus: #e0a86f;
+  /* Cible atteinte : seule couleur d'état encore utilisée, par l'anneau de cible. */
   --quota-ok: #7dbf9b;
-  --quota-ko: #d9615f;
   --radius-card: 8px;
   --radius-ctl: 6px;
 
@@ -406,64 +406,6 @@ input[type="date"] {
   text-align: center;
 }
 
-/* Une case par semaine sur les 4 dernières (RecentWeeks) */
-
-.week-stat {
-  gap: 4px;
-  /* Quatre grandeurs par case : moins de rembourrage que les cartes de synthèse. */
-  padding: 16px 18px;
-}
-
-.week-stat > * + * {
-  margin-top: 6px;
-}
-
-.week-kpis {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.week-kpis > div {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.week-kpis dt {
-  font-size: var(--fs-caption);
-  color: var(--text-muted);
-}
-
-.week-kpis dd {
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-
-.week-stat-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-/* Marqueur de quotas : la couleur double le glyphe, elle ne le remplace pas. */
-.quota-mark {
-  font-size: var(--fs-body);
-  line-height: 1;
-  letter-spacing: -1px;
-}
-
-.quota-mark[data-status="both"],
-.quota-mark[data-status="one"] {
-  color: var(--quota-ok);
-}
-
-.quota-mark[data-status="none"] {
-  color: var(--quota-ko);
-}
-
 /* Cible du plan sous un KPI de synthèse (TargetRing) */
 
 .target-ring {
@@ -768,10 +710,15 @@ input[type="date"] {
   flex-direction: column-reverse;
 }
 
+/* Un segment par sortie, chacun menant à sa page Garmin. */
 .day-bar-seg {
   display: block;
   flex-basis: 0;
   min-height: 3px; /* Une part minuscule reste visible plutôt que d'être écrasée. */
+}
+
+.day-bar-seg:hover {
+  filter: brightness(1.25);
 }
 
 /* Hauteur proportionnelle à la grandeur choisie (fixée en style inline). */
@@ -884,8 +831,31 @@ li[data-state="future"] .day-bar-fill {
   border-bottom: 1px solid var(--bg-track);
 }
 
+/* Toute la ligne est un lien vers la sortie sur Garmin Connect : elle ne doit
+   pour autant pas se peindre en lien, c'est un tableau qu'on lit. */
+a.table-row {
+  color: inherit;
+  text-decoration: none;
+}
+
 .table-row {
   border-bottom: 1px solid var(--bg-track);
+}
+
+/* Date d'une sortie, suivie de sa semaine de plan quand elle en a une. */
+.activity-date {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.plan-week-tag {
+  flex-shrink: 0;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 28%, var(--bg-card));
+  font-size: var(--fs-caption);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Repère visuel entre semaines consécutives : une bande sur deux, discrète. */

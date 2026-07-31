@@ -5,7 +5,6 @@ import {
   startOfISOWeek,
   startOfYear,
   subDays,
-  subWeeks,
   subYears,
 } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -17,30 +16,6 @@ export interface PeriodRange {
   label: string;
   start: Date | null;
   end: Date;
-}
-
-export interface WeekBucket {
-  start: Date;
-  end: Date;
-  label: string;
-}
-
-/**
- * Les `weekCount` dernières semaines ISO *révolues*, de la plus récente à la
- * plus ancienne — la semaine en cours est délibérément exclue : incomplète,
- * ses totaux ne se comparent pas à ceux d'une semaine entière. Indépendant de
- * la période sélectionnée : c'est un repère fixe sur la forme récente.
- */
-export function lastWeeksBuckets(weekCount: number, now: Date = new Date()): WeekBucket[] {
-  return Array.from({ length: weekCount }, (_, index) => {
-    const reference = subWeeks(now, index + 1);
-    const start = startOfISOWeek(reference);
-    return {
-      start,
-      end: endOfISOWeek(reference),
-      label: `Sem. du ${format(start, "d MMM", { locale: fr })}`,
-    };
-  });
 }
 
 /** Résout une période sélectionnable en bornes exactes (CA2.4) avec un libellé en toutes lettres (CA2.9). */

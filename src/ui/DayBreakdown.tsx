@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { addDays, format, isAfter, isSameDay, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
+import { garminActivityUrl } from "../domain/activity";
 import { summarize, summarizeBySport, type PeriodSummary } from "../domain/aggregate";
 import type { PeriodRange } from "../domain/period";
 import type { Activity, SportKind } from "../domain/types";
@@ -27,6 +28,16 @@ function metricValue(summary: PeriodSummary, metric: DayMetric): number {
   return metric === "distance" ? summary.totalDistance : summary.totalDuration;
 }
 
+function activityMetricValue(activity: Activity, metric: DayMetric): number {
+  return (metric === "distance" ? activity.distance : activity.duration) ?? 0;
+}
+
+function activityMetricText(activity: Activity, metric: DayMetric): string {
+  return metric === "distance"
+    ? `${((activity.distance ?? 0) / 1000).toFixed(1)} km`
+    : (formatDuration(activity.duration) ?? "—");
+}
+
 /** Répartition jour par jour de la semaine en cours (CA2.7). Chaque état a son propre texte (CA2.8, ENF6). */
 export function DayBreakdown({ period, activities }: DayBreakdownProps) {
   const [metric, setMetric] = useState<DayMetric>("distance");
@@ -48,7 +59,7 @@ export function DayBreakdown({ period, activities }: DayBreakdownProps) {
       : dayActivities.length > 0
         ? "active"
         : "empty";
-    return { day, summary, bySport, state };
+    return { day, dayActivities, summary, bySport, state };
   });
 
   // La barre la plus haute correspond à la plus grande valeur du jour, dans la
@@ -102,11 +113,16 @@ export function DayBreakdown({ period, activities }: DayBreakdownProps) {
       </div>
 
       <ul className="day-breakdown-list">
-        {dayEntries.map(({ day, summary, bySport, state }) => {
+        {dayEntries.map(({ day, dayActivities, summary, state }) => {
           const dayValue = metricValue(summary, metric);
           const barScale = maxValue > 0 ? dayValue / maxValue : 1;
           const barHeight = 8 + barScale * 56;
-          const segments = SPORT_ORDER.filter((sport) => metricValue(bySport[sport], metric) > 0);
+          // Un segment par sortie, groupées par sport : la barre garde exactement
+          // les mêmes proportions qu'agrégée par sport, mais chaque tranche
+          // désigne une sortie précise, donc peut mener à sa page Garmin.
+          const segments = dayActivities
+            .filter((activity) => activityMetricValue(activity, metric) > 0)
+            .sort((a, b) => SPORT_ORDER.indexOf(a.sport) - SPORT_ORDER.indexOf(b.sport));
 
           const distanceText = `${(summary.totalDistance / 1000).toFixed(1)} km`;
           const durationText = formatDuration(summary.totalDuration) ?? "—";
@@ -119,17 +135,17 @@ export function DayBreakdown({ period, activities }: DayBreakdownProps) {
                   style={state === "active" ? { height: `${barHeight}px` } : undefined}
                 >
                   {state === "active" &&
-                    segments.map((sport) => (
-                      <span
-                        key={sport}
+                    segments.map((activity) => (
+                      <a
+                        key={activity.id}
                         className="day-bar-seg"
-                        data-sport={sport}
-                        style={{ flexGrow: metricValue(bySport[sport], metric) }}
-                        title={`${SPORT_LABELS[sport]} : ${
-                          metric === "distance"
-                            ? `${(bySport[sport].totalDistance / 1000).toFixed(1)} km`
-                            : (formatDuration(bySport[sport].totalDuration) ?? "—")
-                        }`}
+                        data-sport={activity.sport}
+                        style={{ flexGrow: activityMetricValue(activity, metric) }}
+                        href={garminActivityUrl(activity.id)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`${activity.name} · ${SPORT_LABELS[activity.sport]} · ${activityMetricText(activity, metric)}`}
+                        aria-label={`${activity.name} — ouvrir sur Garmin Connect`}
                       />
                     ))}
                 </div>

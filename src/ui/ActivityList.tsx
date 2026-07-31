@@ -1,7 +1,9 @@
 import { startOfISOWeek } from "date-fns";
 import { useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { garminActivityUrl } from "../domain/activity";
 import { sortActivities, type SortDirection, type SortField } from "../domain/filter";
+import { planWeekNumberAt } from "../domain/plan";
 import type { Activity, SportKind } from "../domain/types";
 import { formatDistance, formatDuration, formatElevation } from "../domain/units";
 import { EmptyState } from "./EmptyState";
@@ -14,7 +16,8 @@ const SPORT_LABELS: Record<SportKind, string> = {
 };
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" });
-const GRID_TEMPLATE = "110px 1fr 130px 90px 90px 80px";
+/* La colonne de date porte aussi la pastille de semaine du plan, d'où sa largeur. */
+const GRID_TEMPLATE = "145px 1fr 130px 90px 90px 80px";
 const ROW_HEIGHT = 44;
 
 interface ActivityListProps {
@@ -119,10 +122,15 @@ export function ActivityList({ activities }: ActivityListProps) {
           {virtualizer.getVirtualItems().map((virtualRow) => {
             const activity = sorted[virtualRow.index];
             if (!activity) return null;
+            // Rien pour les sorties antérieures au plan ou postérieures à la course.
+            const planWeek = planWeekNumberAt(activity.startedAtLocal);
             return (
-              <div
+              <a
                 key={activity.id}
                 className="table-row"
+                href={garminActivityUrl(activity.id)}
+                target="_blank"
+                rel="noopener noreferrer"
                 data-week-stripe={weekStripes[virtualRow.index] === 1 ? "alt" : undefined}
                 style={{
                   position: "absolute",
@@ -137,7 +145,14 @@ export function ActivityList({ activities }: ActivityListProps) {
                   alignItems: "center",
                 }}
               >
-                <span>{dateFormatter.format(activity.startedAtLocal)}</span>
+                <span className="activity-date">
+                  {dateFormatter.format(activity.startedAtLocal)}
+                  {planWeek !== null && (
+                    <span className="plan-week-tag" aria-label={`Semaine ${planWeek} du plan`}>
+                      S{planWeek}
+                    </span>
+                  )}
+                </span>
                 <span>{activity.name}</span>
                 <span className="badge" data-sport={activity.sport}>
                   {SPORT_LABELS[activity.sport]}
@@ -145,7 +160,7 @@ export function ActivityList({ activities }: ActivityListProps) {
                 <span>{formatDistance(activity.distance) ?? "—"}</span>
                 <span>{formatDuration(activity.duration) ?? "—"}</span>
                 <span>{formatElevation(activity.elevationGain) ?? "—"}</span>
-              </div>
+              </a>
             );
           })}
         </div>

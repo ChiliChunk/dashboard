@@ -8,7 +8,6 @@ import type { SyncStatus as SyncStatusValue } from "../data/sync";
 import { DayBreakdown } from "./DayBreakdown";
 import { EmptyState } from "./EmptyState";
 import { PlanOutlook } from "./PlanOutlook";
-import { RecentWeeks } from "./RecentWeeks";
 import { TargetRing } from "./TargetRing";
 
 /**
@@ -149,10 +148,7 @@ export function Summary({ allActivities, status }: SummaryProps) {
 
       <DayBreakdown period={period} activities={currentActivities} />
 
-      {/* Le plan passe avant le rétroviseur : ce qui attend prime sur ce qui est fait. */}
       <PlanOutlook activities={allActivities} />
-
-      <RecentWeeks activities={allActivities} />
     </div>
   );
 }

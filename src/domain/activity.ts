@@ -15,6 +15,15 @@ function optionalOrNull(value: number | undefined): number | null {
   return value === undefined ? null : value;
 }
 
+/**
+ * Page de la sortie sur Garmin Connect. `Activity.id` est l'`activityId`
+ * Garmin repris tel quel (voir `normalizeGarminActivity`), c'est ce qui rend
+ * ce lien possible sans rien stocker de plus.
+ */
+export function garminActivityUrl(activityId: number): string {
+  return `https://connect.garmin.com/modern/activity/${activityId}`;
+}
+
 const GARMIN_SPORT_MAP: Record<string, SportKind> = {
   running: "run",
   trail_running: "run",
