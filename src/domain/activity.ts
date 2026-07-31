@@ -50,7 +50,7 @@ export function normalizeGarminActivity(raw: GarminActivityRaw): Activity {
     startedAt: new Date(`${raw.startTimeGMT.replace(" ", "T")}Z`),
     startedAtLocal: new Date(raw.startTimeLocal.replace(" ", "T")),
     distance: positiveOrNull(raw.distance),
-    movingTime: positiveOrNull(raw.movingDuration),
+    duration: positiveOrNull(raw.duration),
     elapsedTime: positiveOrNull(raw.elapsedDuration),
     elevationGain: optionalOrNull(raw.elevationGain),
     averageHeartrate: optionalOrNull(raw.averageHR),

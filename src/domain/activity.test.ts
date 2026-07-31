@@ -10,7 +10,8 @@ function garminRaw(overrides: Partial<GarminActivityRaw> = {}): GarminActivityRa
     startTimeGMT: "2026-07-01 06:00:00",
     startTimeLocal: "2026-07-01 08:00:00",
     distance: 10000,
-    movingDuration: 3000,
+    duration: 3000,
+    movingDuration: 2900,
     elapsedDuration: 3100,
     elevationGain: 120,
     averageHR: 145,
@@ -23,10 +24,17 @@ describe("normalizeGarminActivity", () => {
     expect(normalizeGarminActivity(garminRaw({ distance: 0 })).distance).toBeNull();
   });
 
-  it("distingue durée déplacée et durée écoulée", () => {
-    const activity = normalizeGarminActivity(garminRaw({ movingDuration: 3000, elapsedDuration: 3200 }));
-    expect(activity.movingTime).toBe(3000);
-    expect(activity.elapsedTime).toBe(3200);
+  /**
+   * Cas réel d'une randonnée : Garmin chronomètre 9h37 mais ne compte que 3h56
+   * « en mouvement ». C'est `duration` que Garmin Connect affiche et sur
+   * laquelle il calcule l'allure — c'est donc elle que l'app retient.
+   */
+  it("retient la durée chronométrée, pas la durée déplacée", () => {
+    const activity = normalizeGarminActivity(
+      garminRaw({ duration: 34623, movingDuration: 14181, elapsedDuration: 36947 }),
+    );
+    expect(activity.duration).toBe(34623);
+    expect(activity.elapsedTime).toBe(36947);
   });
 
   it("conserve un dénivelé de 0 m comme une vraie valeur, pas une absence", () => {
@@ -69,7 +77,8 @@ describe("normalizeGarminActivity", () => {
       startTimeGMT: "2026-07-01 06:00:00",
       startTimeLocal: "2026-07-01 08:00:00",
       distance: 10000,
-      movingDuration: 3000,
+      duration: 3000,
+      movingDuration: 2900,
       elapsedDuration: 3100,
     };
     const activity = normalizeGarminActivity(withoutOptional);

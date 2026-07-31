@@ -9,7 +9,8 @@ function validGarminActivity(overrides: Record<string, unknown> = {}) {
     startTimeGMT: "2026-07-01 06:00:00",
     startTimeLocal: "2026-07-01 08:00:00",
     distance: 10000,
-    movingDuration: 3000,
+    duration: 3000,
+    movingDuration: 2900,
     elapsedDuration: 3100,
     elevationGain: 120,
     averageHR: 145,
@@ -30,7 +31,8 @@ describe("parseGarminActivity", () => {
       startTimeGMT: "2026-07-01 06:00:00",
       startTimeLocal: "2026-07-01 08:00:00",
       distance: 10000,
-      movingDuration: 3000,
+      duration: 3000,
+      movingDuration: 2900,
       elapsedDuration: 3100,
     };
     const parsed = parseGarminActivity(withoutOptional);
@@ -45,7 +47,7 @@ describe("parseGarminActivity", () => {
       activityType: { typeKey: "running" },
       startTimeGMT: "2026-07-01 06:00:00",
       startTimeLocal: "2026-07-01 08:00:00",
-      movingDuration: 3000,
+      duration: 3000,
     };
     expect(() => parseGarminActivity(incomplete)).toThrow();
   });

@@ -15,7 +15,7 @@ function syntheticActivities(count: number): Activity[] {
     startedAt: new Date(2024, 0, 1 + (index % 700)),
     startedAtLocal: new Date(2024, 0, 1 + (index % 700)),
     distance: 1000 + (index % 50) * 200,
-    movingTime: 600 + (index % 50) * 60,
+    duration: 600 + (index % 50) * 60,
     elapsedTime: 650 + (index % 50) * 60,
     elevationGain: (index % 20) * 10,
     averageHeartrate: null,

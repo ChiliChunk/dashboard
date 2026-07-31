@@ -8,7 +8,8 @@ export interface Activity {
   startedAt: Date;
   startedAtLocal: Date;
   distance: number | null;
-  movingTime: number | null;
+  /** Durée chronométrée (`duration` chez Garmin), celle qu'affiche Garmin Connect. */
+  duration: number | null;
   elapsedTime: number | null;
   elevationGain: number | null;
   averageHeartrate: number | null;

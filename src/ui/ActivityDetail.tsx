@@ -74,13 +74,13 @@ export function ActivityDetail() {
         <dt>Distance</dt>
         <dd>{formatDistance(activity.distance) ?? "non mesuré"}</dd>
         <dt>Durée de déplacement</dt>
-        <dd>{formatDuration(activity.movingTime) ?? "non mesuré"}</dd>
+        <dd>{formatDuration(activity.duration) ?? "non mesuré"}</dd>
         <dt>Durée totale</dt>
         <dd>{formatDuration(activity.elapsedTime) ?? "non mesuré"}</dd>
         <dt>Dénivelé positif</dt>
         <dd>{formatElevation(activity.elevationGain) ?? "non mesuré"}</dd>
         <dt>Allure / vitesse moyenne</dt>
-        <dd>{formatPace(activity.sport, activity.distance, activity.movingTime) ?? "non mesuré"}</dd>
+        <dd>{formatPace(activity.sport, activity.distance, activity.duration) ?? "non mesuré"}</dd>
       </dl>
 
       {activity.averageHeartrate !== null && (

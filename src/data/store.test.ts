@@ -18,7 +18,7 @@ function activity(overrides: Partial<Activity> = {}): Activity {
     startedAt: new Date("2026-07-01T06:00:00Z"),
     startedAtLocal: new Date("2026-07-01T08:00:00"),
     distance: 10000,
-    movingTime: 3000,
+    duration: 3000,
     elapsedTime: 3100,
     elevationGain: 50,
     averageHeartrate: null,

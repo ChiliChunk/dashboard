@@ -11,7 +11,7 @@ function activity(overrides: Partial<Activity> = {}): Activity {
     startedAt: new Date("2026-07-01T06:00:00Z"),
     startedAtLocal: new Date("2026-07-01T08:00:00"),
     distance: 10000,
-    movingTime: 3000,
+    duration: 3000,
     elapsedTime: 3100,
     elevationGain: 100,
     averageHeartrate: null,
@@ -29,7 +29,7 @@ describe("summarize", () => {
     expect(summary).toEqual({
       count: 2,
       totalDistance: 15000,
-      totalMovingTime: 6000,
+      totalDuration: 6000,
       totalElevationGain: 200,
     });
   });
@@ -42,7 +42,7 @@ describe("summarize", () => {
     expect(summarize([])).toEqual({
       count: 0,
       totalDistance: 0,
-      totalMovingTime: 0,
+      totalDuration: 0,
       totalElevationGain: 0,
     });
   });

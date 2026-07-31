@@ -11,7 +11,7 @@ function activity(overrides: Partial<Activity> = {}): Activity {
     startedAt: new Date("2026-01-01T06:00:00Z"),
     startedAtLocal: new Date("2026-01-01T08:00:00"),
     distance: 10000,
-    movingTime: 3000,
+    duration: 3000,
     elapsedTime: 3100,
     elevationGain: 100,
     averageHeartrate: null,
@@ -30,7 +30,7 @@ function syntheticActivities(count: number): Activity[] {
       sport: index % 3 === 0 ? "run" : index % 3 === 1 ? "ride" : "hike",
       startedAtLocal: new Date(2026, 0, 1 + (index % 365)),
       distance: 1000 + (index % 50) * 200,
-      movingTime: 600 + (index % 50) * 60,
+      duration: 600 + (index % 50) * 60,
     }),
   );
 }
@@ -44,8 +44,8 @@ describe("sortActivities (CA3.3)", () => {
 
   it("trie par durée", () => {
     const activities = [
-      activity({ id: 1, movingTime: 1000 }),
-      activity({ id: 2, movingTime: 2000 }),
+      activity({ id: 1, duration: 1000 }),
+      activity({ id: 2, duration: 2000 }),
     ];
     expect(sortActivities(activities, "duration", "asc").map((a) => a.id)).toEqual([1, 2]);
   });

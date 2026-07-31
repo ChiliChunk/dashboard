@@ -25,19 +25,19 @@ const ON_FOOT_SPORTS: SportKind[] = ["run", "hike"];
 export function formatPace(
   sport: SportKind,
   distanceMeters: number | null,
-  movingTimeSeconds: number | null,
+  durationSeconds: number | null,
 ): string | null {
-  if (distanceMeters === null || movingTimeSeconds === null || distanceMeters === 0) {
+  if (distanceMeters === null || durationSeconds === null || distanceMeters === 0) {
     return null;
   }
 
   if (ON_FOOT_SPORTS.includes(sport)) {
-    const secondsPerKm = movingTimeSeconds / (distanceMeters / 1000);
+    const secondsPerKm = durationSeconds / (distanceMeters / 1000);
     const minutes = Math.floor(secondsPerKm / 60);
     const seconds = Math.round(secondsPerKm % 60);
     return `${minutes}:${String(seconds).padStart(2, "0")} min/km`;
   }
 
-  const kmh = distanceMeters / 1000 / (movingTimeSeconds / 3600);
+  const kmh = distanceMeters / 1000 / (durationSeconds / 3600);
   return `${kmh.toFixed(1)} km/h`;
 }

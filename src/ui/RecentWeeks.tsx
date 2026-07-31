@@ -35,7 +35,7 @@ export function RecentWeeks({ activities }: RecentWeeksProps) {
             { name: "Sorties", value: String(summary.count) },
             { name: "Distance", value: formatDistance(summary.totalDistance) ?? "—" },
             { name: "D+", value: formatElevation(summary.totalElevationGain) ?? "—" },
-            { name: "Durée", value: formatDuration(summary.totalMovingTime) ?? "—" },
+            { name: "Durée", value: formatDuration(summary.totalDuration) ?? "—" },
           ],
         };
       });

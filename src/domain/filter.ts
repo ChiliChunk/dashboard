@@ -16,7 +16,7 @@ export function sortActivities(
       case "distance":
         return factor * ((a.distance ?? 0) - (b.distance ?? 0));
       case "duration":
-        return factor * ((a.movingTime ?? 0) - (b.movingTime ?? 0));
+        return factor * ((a.duration ?? 0) - (b.duration ?? 0));
     }
   });
 }

@@ -121,7 +121,7 @@ export function ActivityList({ activities }: ActivityListProps) {
                   {SPORT_LABELS[activity.sport]}
                 </span>
                 <span>{formatDistance(activity.distance) ?? "—"}</span>
-                <span>{formatDuration(activity.movingTime) ?? "—"}</span>
+                <span>{formatDuration(activity.duration) ?? "—"}</span>
                 <span>{formatElevation(activity.elevationGain) ?? "—"}</span>
               </div>
             );

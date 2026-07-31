@@ -3,7 +3,7 @@ import type { Activity, SportKind } from "./types";
 export interface PeriodSummary {
   count: number;
   totalDistance: number;
-  totalMovingTime: number;
+  totalDuration: number;
   totalElevationGain: number;
 }
 
@@ -16,7 +16,7 @@ export interface PeriodComparison {
 const EMPTY_SUMMARY: PeriodSummary = {
   count: 0,
   totalDistance: 0,
-  totalMovingTime: 0,
+  totalDuration: 0,
   totalElevationGain: 0,
 };
 
@@ -26,7 +26,7 @@ export function summarize(activities: Activity[]): PeriodSummary {
     (acc, activity) => ({
       count: acc.count + 1,
       totalDistance: acc.totalDistance + (activity.distance ?? 0),
-      totalMovingTime: acc.totalMovingTime + (activity.movingTime ?? 0),
+      totalDuration: acc.totalDuration + (activity.duration ?? 0),
       totalElevationGain: acc.totalElevationGain + (activity.elevationGain ?? 0),
     }),
     { ...EMPTY_SUMMARY },
@@ -42,7 +42,7 @@ export function compareSummaries(current: Activity[], previous: Activity[]): Per
     delta: {
       count: currentSummary.count - previousSummary.count,
       totalDistance: currentSummary.totalDistance - previousSummary.totalDistance,
-      totalMovingTime: currentSummary.totalMovingTime - previousSummary.totalMovingTime,
+      totalDuration: currentSummary.totalDuration - previousSummary.totalDuration,
       totalElevationGain: currentSummary.totalElevationGain - previousSummary.totalElevationGain,
     },
   };

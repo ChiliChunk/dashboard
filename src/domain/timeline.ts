@@ -39,7 +39,7 @@ function metricValue(activity: Activity, metric: VolumeMetric): number {
     case "distance":
       return activity.distance ?? 0;
     case "duration":
-      return activity.movingTime ?? 0;
+      return activity.duration ?? 0;
     case "elevation":
       return activity.elevationGain ?? 0;
   }

@@ -24,7 +24,7 @@ const SPORT_LABELS: Record<SportKind, string> = {
 };
 
 function metricValue(summary: PeriodSummary, metric: DayMetric): number {
-  return metric === "distance" ? summary.totalDistance : summary.totalMovingTime;
+  return metric === "distance" ? summary.totalDistance : summary.totalDuration;
 }
 
 /** Répartition jour par jour de la semaine en cours (CA2.7). Chaque état a son propre texte (CA2.8, ENF6). */
@@ -109,7 +109,7 @@ export function DayBreakdown({ period, activities }: DayBreakdownProps) {
           const segments = SPORT_ORDER.filter((sport) => metricValue(bySport[sport], metric) > 0);
 
           const distanceText = `${(summary.totalDistance / 1000).toFixed(1)} km`;
-          const durationText = formatDuration(summary.totalMovingTime) ?? "—";
+          const durationText = formatDuration(summary.totalDuration) ?? "—";
 
           return (
             <li key={day.toISOString()} data-state={state}>
@@ -128,7 +128,7 @@ export function DayBreakdown({ period, activities }: DayBreakdownProps) {
                         title={`${SPORT_LABELS[sport]} : ${
                           metric === "distance"
                             ? `${(bySport[sport].totalDistance / 1000).toFixed(1)} km`
-                            : (formatDuration(bySport[sport].totalMovingTime) ?? "—")
+                            : (formatDuration(bySport[sport].totalDuration) ?? "—")
                         }`}
                       />
                     ))}
