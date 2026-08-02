@@ -2,7 +2,10 @@ import { normalizeGarminActivity } from "../domain/activity";
 import { parseGarminActivity } from "../domain/schemas";
 import type { Activity } from "../domain/types";
 
-const GARMIN_SERVICE_BASE = "http://127.0.0.1:8799";
+// Le service Garmin tourne toujours sur la même machine que le serveur qui
+// sert cette page : en déduire l'hôte permet d'ouvrir le dashboard depuis un
+// autre poste du réseau local sans reconfigurer quoi que ce soit.
+const GARMIN_SERVICE_BASE = `http://${globalThis.location?.hostname ?? "127.0.0.1"}:8799`;
 
 export class GarminServiceError extends Error {
   constructor(
