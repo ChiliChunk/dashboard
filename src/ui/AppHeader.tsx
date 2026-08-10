@@ -1,8 +1,8 @@
-import { useMemo } from "react";
 import type { SyncStatus as SyncStatusValue } from "../data/sync";
-import { formatCompactRange, resolvePeriod } from "../domain/period";
 
 interface AppHeaderProps {
+  /** Bornes de la semaine détaillée plus bas — elle n'est pas toujours celle en cours. */
+  periodLabel: string;
   /** Nombre d'activités présentes dans le stockage local. */
   storedCount: number;
   status: SyncStatusValue;
@@ -80,6 +80,7 @@ function TrashIcon() {
  * reviendrait à l'inventer (CA6.3, CA6.4, CA6.5).
  */
 export function AppHeader({
+  periodLabel,
   storedCount,
   status,
   newCount,
@@ -89,12 +90,11 @@ export function AppHeader({
   onClear,
 }: AppHeaderProps) {
   const isSyncing = status === "syncing";
-  const currentWeekLabel = useMemo(() => formatCompactRange(resolvePeriod("current-week")), []);
 
   return (
     <header className="app-header">
       <div className="app-header-line">
-        {currentWeekLabel && <p className="app-header-period caption muted">{currentWeekLabel}</p>}
+        <p className="app-header-period caption muted">{periodLabel}</p>
 
         <div className="app-header-right">
           <p className="app-header-count">

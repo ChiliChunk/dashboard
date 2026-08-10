@@ -580,10 +580,25 @@ input[type="date"] {
   opacity: 0.75;
 }
 
-/* Semaine en cours : repère permanent, indépendant de la sélection. */
+/* Semaine en cours : repère permanent, indépendant de la sélection. Le fond
+   reste neutre et très léger — la teinte d'accent, elle, ne signale que la
+   sélection, et les deux se superposent souvent. */
+.plan-week[data-state="current"] {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
 .plan-week[data-state="current"] .plan-week-number {
   color: var(--text);
   font-weight: 500;
+}
+
+/* Les deux cibles de la semaine sont tenues. Discret à dessein : c'est une
+   confirmation qu'on parcourt du regard, pas une récompense. */
+.plan-week-check {
+  height: 12px;
+  line-height: 12px;
+  font-size: 11px;
+  color: var(--quota-ok);
 }
 
 /* Semaine sélectionnée : c'est elle que détaille le bloc du dessous. */
@@ -803,11 +818,6 @@ li[data-state="future"] .day-bar-fill {
 }
 
 /* Bascule de grandeur : km ou heures. */
-.week-label {
-  font-size: var(--fs-caption);
-  color: var(--text-muted);
-}
-
 .metric-toggle {
   display: inline-flex;
   background: var(--bg-track);

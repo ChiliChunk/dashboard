@@ -2,24 +2,30 @@ import { Route, Switch } from "wouter";
 import type { SyncSnapshot } from "./data/sync";
 import { ActivityDetail } from "./ui/ActivityDetail";
 import { ActivityList } from "./ui/ActivityList";
+import type { PlanWeekSelection } from "./ui/planWeek";
 import { Summary } from "./ui/Summary";
 import { VolumeChart } from "./ui/VolumeChart";
 
-function HomePage({ sync }: { sync: SyncSnapshot }) {
+interface RoutesProps {
+  sync: SyncSnapshot;
+  planWeek: PlanWeekSelection;
+}
+
+function HomePage({ sync, planWeek }: RoutesProps) {
   return (
     <div className="stack">
-      <Summary allActivities={sync.activities} status={sync.status} />
+      <Summary allActivities={sync.activities} status={sync.status} planWeek={planWeek} />
       <VolumeChart activities={sync.activities} />
       <ActivityList activities={sync.activities} />
     </div>
   );
 }
 
-export function AppRoutes({ sync }: { sync: SyncSnapshot }) {
+export function AppRoutes({ sync, planWeek }: RoutesProps) {
   return (
     <Switch>
       <Route path="/">
-        <HomePage sync={sync} />
+        <HomePage sync={sync} planWeek={planWeek} />
       </Route>
       <Route path="/activity/:id" component={ActivityDetail} />
     </Switch>

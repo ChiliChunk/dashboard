@@ -1,12 +1,13 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { summarize } from "../domain/aggregate";
 import { isWithinPeriod, resolvePeriod } from "../domain/period";
-import { planProgress, planWeekAt, planWeekNumberAt, planWeekRange } from "../domain/plan";
+import { planProgress, planWeekAt } from "../domain/plan";
 import type { Activity } from "../domain/types";
 import { formatDistance, formatDuration, formatElevationValue } from "../domain/units";
 import type { SyncStatus as SyncStatusValue } from "../data/sync";
 import { DayBreakdown } from "./DayBreakdown";
 import { EmptyState } from "./EmptyState";
+import type { PlanWeekSelection } from "./planWeek";
 import { PlanOutlook } from "./PlanOutlook";
 import { TargetRing } from "./TargetRing";
 
@@ -29,6 +30,8 @@ interface SummaryProps {
   /** Ensemble complet des activités connues (pour distinguer « compte vide » de « période vide »). */
   allActivities: Activity[];
   status: SyncStatusValue;
+  /** Semaine détaillée par les deux vues du bas, tenue au-dessus des routes (le bandeau l'affiche aussi). */
+  planWeek: PlanWeekSelection;
 }
 
 /**
@@ -37,7 +40,7 @@ interface SummaryProps {
  * l'autre restent lisibles dans le graphique de progression et dans les quatre
  * dernières semaines.
  */
-export function Summary({ allActivities, status }: SummaryProps) {
+export function Summary({ allActivities, status, planWeek }: SummaryProps) {
   const period = useMemo(() => resolvePeriod("current-week"), []);
 
   const currentActivities = useMemo(
@@ -54,17 +57,12 @@ export function Summary({ allActivities, status }: SummaryProps) {
     [currentActivities],
   );
 
-  // Une seule sélection pour les deux vues du bas : cliquer une semaine dans le
-  // plan détaille ses jours juste au-dessus. Hors plan, elle retombe sur la
-  // première semaine, comme la bande du plan elle-même.
-  const currentPlanWeek = useMemo(() => planWeekNumberAt(new Date()), []);
-  const [selectedWeek, setSelectedWeek] = useState(currentPlanWeek ?? 1);
-  const selectedWeekStart = useMemo(() => planWeekRange(selectedWeek).start, [selectedWeek]);
-
-  const planWeek = useMemo(() => (period.start ? planWeekAt(period.start) : null), [period.start]);
+  // Les cartes du haut restent sur la semaine en cours, quelle que soit la
+  // semaine détaillée plus bas : c'est là qu'on lit où on en est aujourd'hui.
+  const planTargets = useMemo(() => (period.start ? planWeekAt(period.start) : null), [period.start]);
   const planRun = useMemo(
-    () => (planWeek ? planProgress(planWeek, currentActivities) : null),
-    [planWeek, currentActivities],
+    () => (planTargets ? planProgress(planTargets, currentActivities) : null),
+    [planTargets, currentActivities],
   );
 
   if (status === "cleared") {
@@ -153,12 +151,12 @@ export function Summary({ allActivities, status }: SummaryProps) {
         </div>
       )}
 
-      <DayBreakdown weekStart={selectedWeekStart} allActivities={allActivities} />
+      <DayBreakdown weekStart={planWeek.start} allActivities={allActivities} />
 
       <PlanOutlook
         activities={allActivities}
-        selected={selectedWeek}
-        onSelect={setSelectedWeek}
+        selected={planWeek.number}
+        onSelect={planWeek.select}
       />
     </div>
   );

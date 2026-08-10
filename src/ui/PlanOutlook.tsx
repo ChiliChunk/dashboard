@@ -110,7 +110,14 @@ export function PlanOutlook({ activities, selected, onSelect }: PlanOutlookProps
               data-state={entry.state}
               aria-pressed={entry.week.number === selected}
               onClick={() => onSelect(entry.week.number)}
+              aria-label={`Semaine ${entry.week.number}${entry.progress?.status === "both" ? ", objectifs atteints" : ""}`}
             >
+              {/* Toujours rendu, même vide : la ligne réservée garde les barres
+                  des douze semaines sur la même base, seul ce qui les distingue
+                  doit se voir. */}
+              <span className="plan-week-check" aria-hidden="true">
+                {entry.progress?.status === "both" ? "✓" : ""}
+              </span>
               <span className="plan-bars">
                 <span
                   className="plan-bar"

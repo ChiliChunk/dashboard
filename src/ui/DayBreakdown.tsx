@@ -1,14 +1,5 @@
 import { useState } from "react";
-import {
-  addDays,
-  endOfISOWeek,
-  format,
-  isAfter,
-  isSameDay,
-  isSameISOWeek,
-  isWithinInterval,
-  startOfDay,
-} from "date-fns";
+import { addDays, endOfISOWeek, format, isAfter, isSameDay, isWithinInterval, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { garminActivityUrl } from "../domain/activity";
 import { summarize, summarizeBySport, type PeriodSummary } from "../domain/aggregate";
@@ -110,12 +101,6 @@ export function DayBreakdown({ weekStart, allActivities }: DayBreakdownProps) {
               ))}
             </span>
           )}
-        </p>
-        {/* La semaine détaillée se choisit dans le plan, plus bas : sans ce
-            rappel, rien ne dirait laquelle est à l'écran. */}
-        <p className="week-label">
-          {format(weekStart, "d MMM", { locale: fr })} – {format(weekEnd, "d MMM", { locale: fr })}
-          {isSameISOWeek(weekStart, today) ? " (en cours)" : ""}
         </p>
 
         <div className="metric-toggle" role="group" aria-label="Grandeur des barres">
