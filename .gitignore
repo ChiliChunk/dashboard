@@ -23,3 +23,4 @@ npm-debug.log*
 
 garmin-service/.env
 garmin-service/__pycache__/
+garmin-service/.garmin-tokens/

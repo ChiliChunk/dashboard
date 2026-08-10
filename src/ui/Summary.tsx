@@ -1,9 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { summarize } from "../domain/aggregate";
 import { isWithinPeriod, resolvePeriod } from "../domain/period";
-import { planProgress, planWeekAt } from "../domain/plan";
+import { planProgress, planWeekAt, planWeekNumberAt, planWeekRange } from "../domain/plan";
 import type { Activity } from "../domain/types";
-import { formatDistance, formatDuration, formatElevation } from "../domain/units";
+import { formatDistance, formatDuration, formatElevationValue } from "../domain/units";
 import type { SyncStatus as SyncStatusValue } from "../data/sync";
 import { DayBreakdown } from "./DayBreakdown";
 import { EmptyState } from "./EmptyState";
@@ -53,6 +53,13 @@ export function Summary({ allActivities, status }: SummaryProps) {
     () => summarize(currentActivities.filter((activity) => activity.sport === "run")),
     [currentActivities],
   );
+
+  // Une seule sélection pour les deux vues du bas : cliquer une semaine dans le
+  // plan détaille ses jours juste au-dessus. Hors plan, elle retombe sur la
+  // première semaine, comme la bande du plan elle-même.
+  const currentPlanWeek = useMemo(() => planWeekNumberAt(new Date()), []);
+  const [selectedWeek, setSelectedWeek] = useState(currentPlanWeek ?? 1);
+  const selectedWeekStart = useMemo(() => planWeekRange(selectedWeek).start, [selectedWeek]);
 
   const planWeek = useMemo(() => (period.start ? planWeekAt(period.start) : null), [period.start]);
   const planRun = useMemo(
@@ -109,15 +116,15 @@ export function Summary({ allActivities, status }: SummaryProps) {
                   done={planRun.elevationGain}
                   target={planRun.week.targetElevationGain}
                   doneText={String(Math.round(planRun.elevationGain))}
-                  targetText={formatElevation(planRun.week.targetElevationGain) ?? "—"}
+                  targetText={formatElevationValue(planRun.week.targetElevationGain) ?? "—"}
                 />
               ) : (
                 <p className="value" data-tooltip="D+ en course à pied">
-                  {formatElevation(currentRun.totalElevationGain)}
+                  {formatElevationValue(currentRun.totalElevationGain)}
                 </p>
               )}
               <StatTotal
-                text={formatElevation(total.totalElevationGain)}
+                text={formatElevationValue(total.totalElevationGain)}
                 redundant={total.totalElevationGain === currentRun.totalElevationGain}
               />
             </div>
@@ -146,9 +153,13 @@ export function Summary({ allActivities, status }: SummaryProps) {
         </div>
       )}
 
-      <DayBreakdown period={period} activities={currentActivities} />
+      <DayBreakdown weekStart={selectedWeekStart} allActivities={allActivities} />
 
-      <PlanOutlook activities={allActivities} />
+      <PlanOutlook
+        activities={allActivities}
+        selected={selectedWeek}
+        onSelect={setSelectedWeek}
+      />
     </div>
   );
 }

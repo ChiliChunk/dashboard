@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatDistance, formatDuration, formatElevation, formatPace } from "./units";
+import {
+  formatDistance,
+  formatDuration,
+  formatElevation,
+  formatElevationValue,
+  formatPace,
+} from "./units";
 
 describe("formatage des unités", () => {
   it("affiche la distance en kilomètres avec une décimale", () => {
@@ -20,6 +26,12 @@ describe("formatage des unités", () => {
 
   it("affiche un dénivelé de 0 m comme une vraie valeur", () => {
     expect(formatElevation(0)).toBe("0 m");
+  });
+
+  it("omet l'unité quand « D+ » porte déjà la grandeur", () => {
+    expect(formatElevationValue(704.6)).toBe("705");
+    expect(formatElevationValue(0)).toBe("0");
+    expect(formatElevationValue(null)).toBeNull();
   });
 
   it("exprime l'allure en min/km pour la course à pied", () => {

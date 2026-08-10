@@ -63,6 +63,10 @@ class Handler(BaseHTTPRequestHandler):
                 return
 
             self._send_json(404, {"error": "Route inconnue."})
+        except garmin_client.GarminRateLimited as error:
+            # Distingué du 502 : le front n'a rien à corriger, il doit
+            # seulement lever le pied. Le message affiché en dépend.
+            self._send_json(429, {"error": str(error)})
         except Exception as error:  # noqa: BLE001 — renvoyé tel quel au client local
             self._send_json(502, {"error": str(error)})
 

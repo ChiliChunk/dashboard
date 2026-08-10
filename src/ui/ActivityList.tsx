@@ -5,7 +5,7 @@ import { garminActivityUrl } from "../domain/activity";
 import { sortActivities, type SortDirection, type SortField } from "../domain/filter";
 import { planWeekNumberAt } from "../domain/plan";
 import type { Activity, SportKind } from "../domain/types";
-import { formatDistance, formatDuration, formatElevation } from "../domain/units";
+import { formatDistance, formatDuration, formatElevationValue } from "../domain/units";
 import { EmptyState } from "./EmptyState";
 
 const SPORT_LABELS: Record<SportKind, string> = {
@@ -159,7 +159,7 @@ export function ActivityList({ activities }: ActivityListProps) {
                 </span>
                 <span>{formatDistance(activity.distance) ?? "—"}</span>
                 <span>{formatDuration(activity.duration) ?? "—"}</span>
-                <span>{formatElevation(activity.elevationGain) ?? "—"}</span>
+                <span>{formatElevationValue(activity.elevationGain) ?? "—"}</span>
               </a>
             );
           })}

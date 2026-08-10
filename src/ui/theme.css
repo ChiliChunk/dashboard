@@ -667,6 +667,13 @@ input[type="date"] {
   line-height: 1.2;
 }
 
+/* Le réalisé reste en retrait de la cible : c'est la cible qu'on vient lire,
+   le réalisé la situe. */
+.plan-detail-done {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
 .plan-detail-targets strong:first-child {
   color: var(--plan-hours);
 }
@@ -796,6 +803,11 @@ li[data-state="future"] .day-bar-fill {
 }
 
 /* Bascule de grandeur : km ou heures. */
+.week-label {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+}
+
 .metric-toggle {
   display: inline-flex;
   background: var(--bg-track);

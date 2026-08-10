@@ -16,7 +16,14 @@ export class GarminServiceError extends Error {
 async function garminFetch(path: string): Promise<Response> {
   const response = await fetch(`${GARMIN_SERVICE_BASE}${path}`);
   if (!response.ok) {
-    throw new GarminServiceError(`Requête au service Garmin local en échec : ${path}`, response.status);
+    // Le 429 vient de Garmin, pas du service local : l'annoncer comme une
+    // panne enverrait l'utilisateur chercher au mauvais endroit, alors qu'il
+    // n'a qu'à laisser passer quelques minutes.
+    const message =
+      response.status === 429
+        ? "Garmin limite temporairement les requêtes. La synchronisation reprendra dans quelques minutes."
+        : `Requête au service Garmin local en échec : ${path}`;
+    throw new GarminServiceError(message, response.status);
   }
   return response;
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { latestStartEpoch, mergeActivities, selectFreshActivities } from "../domain/incremental";
 import type { Activity, SyncCursor } from "../domain/types";
 import { fetchActivityPage } from "./garmin";
@@ -18,6 +18,18 @@ export type SyncStatus = "idle" | "syncing" | "synced" | "offline" | "error" | "
  * avance visiblement.
  */
 const PAGE_SIZE = 50;
+
+/**
+ * Pause entre deux pages. Rattraper un historique complet enchaîne des
+ * dizaines d'appels : sans ce délai, Garmin coupe pour dépassement de quota.
+ * Une synchronisation ordinaire ne demandant qu'une seule page, il ne se paie
+ * que sur le rattrapage.
+ */
+const PAGE_DELAY_MS = 700;
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 interface SyncState {
   status: SyncStatus;
@@ -49,7 +61,15 @@ export function useSync() {
     errorMessage: null,
   });
 
-  const runSync = useCallback(async () => {
+  /**
+   * Une seule passe à la fois. React 18 en mode strict monte le composant
+   * deux fois : sans ce verrou, deux paginations complètes partent en
+   * parallèle sur le même compte, ce que Garmin lit comme une rafale. Il
+   * protège aussi des clics répétés sur « resynchroniser ».
+   */
+  const runningRef = useRef(false);
+
+  const runSyncPass = useCallback(async () => {
     if (isOffline()) {
       const cached = await getAllActivities();
       setState((previous) => ({ ...previous, status: "offline", activities: cached }));
@@ -93,6 +113,7 @@ export function useSync() {
         // Une page déjà connue, ou plus courte que demandée, marque la fin.
         if (reachedKnown || pageActivities.length < PAGE_SIZE) break;
         offset += pageActivities.length;
+        await delay(PAGE_DELAY_MS);
       }
 
       // Curseur avancé seulement après une passe complète : un échec en cours
@@ -123,6 +144,16 @@ export function useSync() {
       }));
     }
   }, []);
+
+  const runSync = useCallback(async () => {
+    if (runningRef.current) return;
+    runningRef.current = true;
+    try {
+      await runSyncPass();
+    } finally {
+      runningRef.current = false;
+    }
+  }, [runSyncPass]);
 
   /**
    * Vide le stockage local, curseur compris : la synchronisation suivante

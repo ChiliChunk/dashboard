@@ -1,15 +1,32 @@
 import { useState } from "react";
-import { addDays, format, isAfter, isSameDay, startOfDay } from "date-fns";
+import {
+  addDays,
+  endOfISOWeek,
+  format,
+  isAfter,
+  isSameDay,
+  isSameISOWeek,
+  isWithinInterval,
+  startOfDay,
+} from "date-fns";
 import { fr } from "date-fns/locale";
 import { garminActivityUrl } from "../domain/activity";
 import { summarize, summarizeBySport, type PeriodSummary } from "../domain/aggregate";
-import type { PeriodRange } from "../domain/period";
 import type { Activity, SportKind } from "../domain/types";
 import { formatDuration } from "../domain/units";
 
 interface DayBreakdownProps {
-  period: PeriodRange;
-  activities: Activity[];
+  /**
+   * Lundi de la semaine détaillée. Ce n'est pas forcément la semaine en cours :
+   * la sélection dans le plan pilote cette vue, pour que les deux se lisent
+   * ensemble plutôt que de désigner chacune une semaine différente.
+   */
+  weekStart: Date;
+  /**
+   * Toutes les activités connues, et non les seules de la semaine en cours :
+   * la semaine détaillée sort du cadre de la période affichée par les cartes.
+   */
+  allActivities: Activity[];
 }
 
 type DayState = "future" | "empty" | "active";
@@ -38,17 +55,17 @@ function activityMetricText(activity: Activity, metric: DayMetric): string {
     : (formatDuration(activity.duration) ?? "—");
 }
 
-/** Répartition jour par jour de la semaine en cours (CA2.7). Chaque état a son propre texte (CA2.8, ENF6). */
-export function DayBreakdown({ period, activities }: DayBreakdownProps) {
+/** Répartition jour par jour d'une semaine (CA2.7). Chaque état a son propre texte (CA2.8, ENF6). */
+export function DayBreakdown({ weekStart, allActivities }: DayBreakdownProps) {
   const [metric, setMetric] = useState<DayMetric>("distance");
 
-  if (period.kind !== "current-week" || period.start === null) {
-    return null;
-  }
-
   const today = startOfDay(new Date());
-  const weekStart = period.start;
+  const weekEnd = endOfISOWeek(weekStart);
   const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
+
+  const activities = allActivities.filter((activity) =>
+    isWithinInterval(activity.startedAtLocal, { start: weekStart, end: weekEnd }),
+  );
 
   const dayEntries = days.map((day) => {
     const dayActivities = activities.filter((activity) => isSameDay(activity.startedAtLocal, day));
@@ -94,6 +111,13 @@ export function DayBreakdown({ period, activities }: DayBreakdownProps) {
             </span>
           )}
         </p>
+        {/* La semaine détaillée se choisit dans le plan, plus bas : sans ce
+            rappel, rien ne dirait laquelle est à l'écran. */}
+        <p className="week-label">
+          {format(weekStart, "d MMM", { locale: fr })} – {format(weekEnd, "d MMM", { locale: fr })}
+          {isSameISOWeek(weekStart, today) ? " (en cours)" : ""}
+        </p>
+
         <div className="metric-toggle" role="group" aria-label="Grandeur des barres">
           <button
             type="button"
@@ -124,8 +148,13 @@ export function DayBreakdown({ period, activities }: DayBreakdownProps) {
             .filter((activity) => activityMetricValue(activity, metric) > 0)
             .sort((a, b) => SPORT_ORDER.indexOf(a.sport) - SPORT_ORDER.indexOf(b.sport));
 
-          const distanceText = `${(summary.totalDistance / 1000).toFixed(1)} km`;
-          const durationText = formatDuration(summary.totalDuration) ?? "—";
+          // Une seule grandeur sous la barre, celle qui lui donne sa hauteur :
+          // afficher l'autre en même temps invitait à comparer les jours sur
+          // un chiffre que le graphique ne représente pas.
+          const valueText =
+            metric === "distance"
+              ? `${(summary.totalDistance / 1000).toFixed(1)} km`
+              : (formatDuration(summary.totalDuration) ?? "—");
 
           return (
             <li key={day.toISOString()} data-state={state}>
@@ -152,13 +181,7 @@ export function DayBreakdown({ period, activities }: DayBreakdownProps) {
               </div>
               <p>{format(day, "EEE", { locale: fr })}</p>
               <p>
-                {state === "future"
-                  ? "à venir"
-                  : state === "empty"
-                    ? "aucune sortie"
-                    : metric === "distance"
-                      ? `${distanceText} · ${durationText}`
-                      : `${durationText} · ${distanceText}`}
+                {state === "future" ? "à venir" : state === "empty" ? "aucune sortie" : valueText}
               </p>
             </li>
           );

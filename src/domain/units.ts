@@ -20,6 +20,16 @@ export function formatElevation(elevationMeters: number | null): string | null {
   return `${Math.round(elevationMeters)} m`;
 }
 
+/**
+ * Dénivelé sans son unité, pour les endroits où « D+ » est déjà écrit à côté
+ * ou porté par un titre de colonne : « 700 m D+ » fait lire deux unités là où
+ * il n'y en a qu'une.
+ */
+export function formatElevationValue(elevationMeters: number | null): string | null {
+  if (elevationMeters === null) return null;
+  return String(Math.round(elevationMeters));
+}
+
 const ON_FOOT_SPORTS: SportKind[] = ["run", "hike"];
 
 export function formatPace(

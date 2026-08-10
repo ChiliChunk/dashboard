@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { isWithinInterval } from "date-fns";
 import {
   PLAN_OBJECTIVE,
@@ -8,7 +8,7 @@ import {
   planWeekRange,
 } from "../domain/plan";
 import type { Activity } from "../domain/types";
-import { formatDuration, formatElevation } from "../domain/units";
+import { formatDuration, formatElevationValue } from "../domain/units";
 
 /** Hauteur, en pixels, de la barre correspondant à la plus grosse cible du plan. */
 const BAR_MAX_HEIGHT = 84;
@@ -32,6 +32,9 @@ function fillRatio(done: number, target: number): number {
 
 interface PlanOutlookProps {
   activities: Activity[];
+  /** Semaine sélectionnée, tenue par le parent : la répartition par jour affichée au-dessus suit la même. */
+  selected: number;
+  onSelect: (weekNumber: number) => void;
 }
 
 /**
@@ -42,12 +45,11 @@ interface PlanOutlookProps {
  * réalisée, ce qui met le reste à faire dans le même cadre que ce qui vient.
  *
  * Chaque semaine est un bouton : le détail affiché dessous suit la sélection,
- * ce qui permet d'aller voir ce qui attend sans quitter la page.
+ * ainsi que la répartition par jour affichée au-dessus — d'où une sélection
+ * tenue par le parent plutôt qu'ici.
  */
-export function PlanOutlook({ activities }: PlanOutlookProps) {
+export function PlanOutlook({ activities, selected, onSelect }: PlanOutlookProps) {
   const currentNumber = useMemo(() => planWeekNumberAt(new Date()), []);
-  // Hors plan, la sélection retombe sur la première semaine plutôt que sur rien.
-  const [selected, setSelected] = useState(currentNumber ?? 1);
 
   const weeks = useMemo(() => {
     return PLAN_WEEKS.map((week, index) => {
@@ -107,7 +109,7 @@ export function PlanOutlook({ activities }: PlanOutlookProps) {
               className="plan-week"
               data-state={entry.state}
               aria-pressed={entry.week.number === selected}
-              onClick={() => setSelected(entry.week.number)}
+              onClick={() => onSelect(entry.week.number)}
             >
               <span className="plan-bars">
                 <span
@@ -148,9 +150,25 @@ export function PlanOutlook({ activities }: PlanOutlookProps) {
       </ol>
 
       <div className="plan-detail">
+        {/* Le réalisé précède la cible, séparé d'une barre : la semaine se lit
+            d'un coup comme « où j'en suis sur ce qui est demandé », sans avoir
+            à retrouver l'information dans les cartes du haut. Une semaine à
+            venir n'a rien de réalisé à montrer, elle garde la seule cible. */}
         <p className="plan-detail-targets">
-          <strong>{formatDuration(week.targetDuration)}</strong>
-          <strong>{formatElevation(week.targetElevationGain)} D+</strong>
+          <strong>
+            {detail.progress && (
+              <span className="plan-detail-done">{formatDuration(detail.progress.duration)} / </span>
+            )}
+            {formatDuration(week.targetDuration)}
+          </strong>
+          <strong>
+            {detail.progress && (
+              <span className="plan-detail-done">
+                {formatElevationValue(detail.progress.elevationGain)} /{" "}
+              </span>
+            )}
+            {formatElevationValue(week.targetElevationGain)} D+
+          </strong>
         </p>
         <p className="caption">
           Semaine {week.number} sur {PLAN_WEEKS.length}
@@ -158,7 +176,7 @@ export function PlanOutlook({ activities }: PlanOutlookProps) {
           {week.footOutings} sorties à pied · plafond {formatDuration(week.totalDurationCeiling)}{" "}
           toutes activités
           {hasOptional
-            ? ` · avec la sortie optionnelle à pied : ${formatDuration(week.optionalDuration)} et ${formatElevation(week.optionalElevationGain)}`
+            ? ` · avec la sortie optionnelle à pied : ${formatDuration(week.optionalDuration)} et ${formatElevationValue(week.optionalElevationGain)} D+`
             : ""}
         </p>
         {week.note && <p className="caption muted">{week.note}</p>}
