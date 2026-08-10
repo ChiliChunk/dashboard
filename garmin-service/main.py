@@ -13,7 +13,10 @@ import garmin_client
 sys.stdout.reconfigure(encoding="utf-8")
 sys.stderr.reconfigure(encoding="utf-8")
 
-HOST = "127.0.0.1"
+# Boucle locale par défaut. Mettre GARMIN_SERVICE_HOST=0.0.0.0 pour rendre le
+# service joignable depuis les autres machines du réseau local (le front tourne
+# alors sur un autre poste et ne peut plus passer par 127.0.0.1).
+HOST = os.environ.get("GARMIN_SERVICE_HOST", "127.0.0.1")
 PORT = 8799
 MAX_PAGE_SIZE = 200
 
