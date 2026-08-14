@@ -69,20 +69,20 @@
       "note": null
     },
     {
-      "numero": 3, "bloc": "1 - Reconstruction", "type_semaine": "progressive", "sorties_pied": 3,
-      "base": {"heures": 5.25, "duree_min": 315, "affichage": "5h15", "dplus": 1100, "dplus_par_heure": 210},
-      "avec_optionnelle": {"heures": 6.25, "duree_min": 375, "affichage": "6h15", "dplus": 1400, "dplus_par_heure": 224},
-      "optionnelle": {"disponible": true, "si_course": {"duree_min": 60, "dplus": 300}, "alternative": ["randonnee", "velo"], "heures_max": 3.0},
-      "heures_totales_max": 8.25,
-      "note": "Heures equivalentes a ta meilleure semaine de l'annee."
-    },
-    {
-      "numero": 4, "bloc": "1 - Reconstruction", "type_semaine": "allegee", "sorties_pied": 3,
+      "numero": 3, "bloc": "1 - Reconstruction", "type_semaine": "allegee", "sorties_pied": 3,
       "base": {"heures": 3.5, "duree_min": 210, "affichage": "3h30", "dplus": 600, "dplus_par_heure": 171},
       "avec_optionnelle": {"heures": 4.25, "duree_min": 255, "affichage": "4h15", "dplus": 800, "dplus_par_heure": 188},
       "optionnelle": {"disponible": true, "si_course": {"duree_min": 45, "dplus": 200}, "alternative": ["randonnee", "velo"], "heures_max": 2.0},
       "heures_totales_max": 5.5,
       "note": "Recuperation : -35% sur les heures et sur le D+."
+    },
+    {
+      "numero": 4, "bloc": "1 - Reconstruction", "type_semaine": "progressive", "sorties_pied": 3,
+      "base": {"heures": 5.25, "duree_min": 315, "affichage": "5h15", "dplus": 1100, "dplus_par_heure": 210},
+      "avec_optionnelle": {"heures": 6.25, "duree_min": 375, "affichage": "6h15", "dplus": 1400, "dplus_par_heure": 224},
+      "optionnelle": {"disponible": true, "si_course": {"duree_min": 60, "dplus": 300}, "alternative": ["randonnee", "velo"], "heures_max": 3.0},
+      "heures_totales_max": 8.25,
+      "note": "Heures equivalentes a ta meilleure semaine de l'annee."
     },
     {
       "numero": 5, "bloc": "2 - Developpement", "type_semaine": "pic_bloc", "sorties_pied": 3,
