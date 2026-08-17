@@ -13,10 +13,6 @@ import garmin_client
 sys.stdout.reconfigure(encoding="utf-8")
 sys.stderr.reconfigure(encoding="utf-8")
 
-# Boucle locale par défaut. Mettre GARMIN_SERVICE_HOST=0.0.0.0 pour rendre le
-# service joignable depuis les autres machines du réseau local (le front tourne
-# alors sur un autre poste et ne peut plus passer par 127.0.0.1).
-HOST = os.environ.get("GARMIN_SERVICE_HOST", "127.0.0.1")
 PORT = 8799
 MAX_PAGE_SIZE = 200
 
@@ -79,8 +75,12 @@ class Handler(BaseHTTPRequestHandler):
 
 def main() -> None:
     load_credentials()
-    server = HTTPServer((HOST, PORT), Handler)
-    print(f"Service Garmin local à l'écoute sur http://{HOST}:{PORT}")
+    # Lu après load_credentials (donc après load_dotenv) pour que le réglage
+    # puisse vivre dans .env : le front déduit l'URL du service du hostname de
+    # la page, donc un accès au dashboard par l'IP LAN exige 0.0.0.0 ici.
+    host = os.environ.get("GARMIN_SERVICE_HOST", "127.0.0.1")
+    server = HTTPServer((host, PORT), Handler)
+    print(f"Service Garmin local à l'écoute sur http://{host}:{PORT}")
     server.serve_forever()
 
 

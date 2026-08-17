@@ -9,8 +9,9 @@ processus locaux, sans rien d'hébergé à distance :
 
 - **Frontend** : Vite + React 18 + TypeScript strict, à la racine du dépôt.
 - **Backend** : `garmin-service/`, un serveur Python minimal (aucun
-  framework) qui parle à Garmin Connect via `garminconnect` et n'écoute que
-  sur `127.0.0.1:8799`.
+  framework) qui parle à Garmin Connect via `garminconnect`, sur le port
+  8799. Interface d'écoute réglée par `GARMIN_SERVICE_HOST` (`127.0.0.1` par
+  défaut ; `0.0.0.0` en production sur le Raspberry, voir « Déploiement »).
 
 Le frontend ne fait jamais de flux OAuth ni d'authentification : il
 interroge uniquement le service Garmin local, qui lit ses identifiants dans
@@ -45,9 +46,13 @@ interroge le backend dès son premier rendu, donc l'ordre de démarrage compte.
 Résumé :
 
 ```bash
-cd garmin-service && "C:\Python39\python.exe" main.py   # backend, en arrière-plan
-npm run dev                                               # frontend
+cd garmin-service && .venv/bin/python main.py   # backend, en arrière-plan
+npm run dev                                     # frontend
 ```
+
+Le service Python a son propre virtualenv, `garmin-service/.venv` (Python
+3.13) : le `python3` du système n'a ni `dotenv` ni `garminconnect`, il faut
+toujours passer par `.venv/bin/python`.
 
 Ne pas utiliser `wrangler pages dev` : c'est un résidu d'une itération
 précédente qui reposait sur des fonctions serverless (OAuth Strava),
@@ -101,9 +106,46 @@ stockage :
   `GET /activities?offset=&limit=` (limit plafonné à 200), triée de la plus
   récente à la plus ancienne. Il ne filtre ni ne déduplique rien : c'est le
   front qui décide ce qui est nouveau. Les en-têtes CORS sont ouverts (`*`)
-  volontairement — le service n'écoutant que sur l'interface de boucle
-  locale, cela ne l'expose pas au réseau, et c'est nécessaire pour que le
-  front (autre origine/port) puisse lire la réponse.
+  volontairement : le front vit sur une autre origine (port 5173), il ne
+  pourrait pas lire la réponse autrement. Portée assumée au réseau local
+  seulement.
+- **`src/domain/plan.ts`** lit `plan_trail_44k_1500d.json`, un plan
+  d'entraînement figé versionné avec le code — ni synchronisé ni recalculé.
+  Seules trois valeurs par semaine en sont extraites (heures à pied, D+ à
+  pied, plafond toutes activités) ; le reste du document est documentaire.
+- **`src/data/garmin.ts`** construit l'URL du service à partir du hostname de
+  la page consultée, pas d'une constante : le dashboard s'ouvre aussi bien
+  sur `localhost` que sur l'IP LAN du Raspberry, et le backend doit être
+  joignable sur la même machine dans les deux cas. C'est ce qui rend
+  `GARMIN_SERVICE_HOST=0.0.0.0` obligatoire dès qu'on y accède par l'IP —
+  sinon le navigateur signale un échec CORS trompeur (état `null`) alors que
+  la connexion a simplement été refusée.
+
+## Déploiement (Raspberry Pi)
+
+L'app tourne en permanence sur le Raspberry (`framboise3`, 192.168.1.130) via
+deux services **systemd utilisateur** (pas system), définis dans
+`~/.config/systemd/user/` et hors dépôt :
+
+- `garmin-service.service` — backend, `WorkingDirectory=garmin-service`,
+  `ExecStart=.venv/bin/python main.py`, `Restart=always`.
+- `dashboard-front.service` — `npm run dev` à la racine (serveur Vite, pas de
+  build de production), démarre après le backend.
+
+```bash
+systemctl --user restart garmin-service dashboard-front
+systemctl --user status garmin-service
+```
+
+Après toute modification du code, redémarrer le service concerné : le backend
+Python ne se recharge pas à chaud (Vite, lui, fait du HMR). `vite.config.ts`
+force `host: true` pour la même raison que ci-dessus, et exclut
+`garmin-service/**` du watcher — le venv y épuiserait la limite d'inotify du
+Raspberry (ENOSPC au bout de quelques secondes).
+
+Le journal systemd utilisateur n'est pas persisté sur cette machine
+(`journalctl --user` ne renvoie rien) : pour diagnostiquer, lancer le service
+au premier plan plutôt que d'espérer des logs.
 
 ## Conventions de code
 
