@@ -3,7 +3,9 @@ from __future__ import annotations
 import json
 import os
 import sys
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import traceback
+from datetime import datetime, timezone
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 from dotenv import load_dotenv
@@ -70,7 +72,16 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(502, {"error": str(error)})
 
     def log_message(self, format: str, *args: object) -> None:  # noqa: A002
-        sys.stderr.write("%s - %s\n" % (self.address_string(), format % args))
+        _log("%s - %s" % (self.address_string(), format % args))
+
+
+def _log(message: str) -> None:
+    """Horodatage explicite : le journal systemd utilisateur de la machine de
+    déploiement n'est pas persisté, la sortie du service est redirigée vers un
+    fichier par l'unité. Sans horodatage, ce fichier ne permet pas de dater un
+    arrêt inopiné."""
+    stamp = datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
+    print(f"{stamp} {message}", file=sys.stderr, flush=True)
 
 
 def main() -> None:
@@ -79,9 +90,22 @@ def main() -> None:
     # puisse vivre dans .env : le front déduit l'URL du service du hostname de
     # la page, donc un accès au dashboard par l'IP LAN exige 0.0.0.0 ici.
     host = os.environ.get("GARMIN_SERVICE_HOST", "127.0.0.1")
-    server = HTTPServer((host, PORT), Handler)
-    print(f"Service Garmin local à l'écoute sur http://{host}:{PORT}")
-    server.serve_forever()
+    # Threadé : un appel Garmin peut durer près d'une minute (temporisations
+    # de garmin_client après un 429). Avec un serveur mono-thread, toutes les
+    # autres requêtes du front attendaient derrière, ce qui donnait un service
+    # « figé » indiscernable d'un service tombé.
+    server = ThreadingHTTPServer((host, PORT), Handler)
+    _log(f"Service Garmin à l'écoute sur http://{host}:{PORT}")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        _log("Arrêt demandé.")
+    except BaseException:
+        # Systemd redémarre le service, mais sans trace écrite la cause du
+        # redémarrage était perdue : c'est précisément ce qui a laissé un
+        # cycle d'arrêts inexpliqués passer inaperçu pendant des semaines.
+        _log("Arrêt sur exception non rattrapée :\n" + traceback.format_exc())
+        raise
 
 
 if __name__ == "__main__":

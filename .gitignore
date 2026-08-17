@@ -24,3 +24,6 @@ npm-debug.log*
 garmin-service/.env
 garmin-service/__pycache__/
 garmin-service/.garmin-tokens/
+
+# Journal du service Python (unité systemd du Raspberry)
+garmin-service/service.log

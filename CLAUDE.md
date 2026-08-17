@@ -144,8 +144,17 @@ force `host: true` pour la même raison que ci-dessus, et exclut
 Raspberry (ENOSPC au bout de quelques secondes).
 
 Le journal systemd utilisateur n'est pas persisté sur cette machine
-(`journalctl --user` ne renvoie rien) : pour diagnostiquer, lancer le service
-au premier plan plutôt que d'espérer des logs.
+(`journalctl --user` ne renvoie rien). L'unité du backend redirige donc sa
+sortie vers `garmin-service/service.log` (ignoré par git, jamais tourné
+automatiquement — le purger s'il grossit) :
+
+```bash
+tail -f garmin-service/service.log
+```
+
+C'est le seul endroit où lire un arrêt inopiné : le service avait accumulé
+plusieurs milliers de redémarrages silencieux avant que cette redirection
+n'existe.
 
 ## Conventions de code
 
