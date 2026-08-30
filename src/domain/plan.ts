@@ -87,8 +87,12 @@ export type PlanQuotaStatus = "none" | "one" | "both";
 
 export interface PlanProgress {
   week: PlanWeek;
-  /** Réalisé sur les seules sorties de course à pied — vélo et rando n'y entrent pas. */
+  /**
+   * Réalisé à pied : la course intégralement, la randonnée à moitié pour la
+   * durée (voir `HIKE_DURATION_SHARE`). Le vélo n'y entre pas.
+   */
   duration: number;
+  /** D+ à pied : course et randonnée comptent pareil, mètre pour mètre. */
   elevationGain: number;
   durationMet: boolean;
   elevationMet: boolean;
@@ -96,16 +100,30 @@ export interface PlanProgress {
 }
 
 /**
- * Avancement d'une semaine du plan. Seul le sport `run` alimente les deux
- * compteurs : une randonnée peut apporter beaucoup de D+ sans rien changer au
- * contrat de la semaine, qui porte sur les sorties à pied courues.
+ * Part de la durée d'une randonnée qui alimente la cible d'heures. Le D+ d'une
+ * rando se gagne dans les mêmes jambes que celui d'une sortie courue, il compte
+ * donc en entier ; le temps, lui, se marche à une intensité bien moindre —
+ * l'amputer de moitié évite qu'une longue sortie tranquille ne solde le contrat
+ * d'heures de la semaine.
+ */
+export const HIKE_DURATION_SHARE = 0.5;
+
+/** Ce que la course et la rando comptent, en une phrase, pour l'expliquer dans l'interface. */
+export const PLAN_COUNTING_RULE =
+  "Les cibles du plan portent sur le travail à pied : la course compte en entier, la randonnée apporte tout son D+ mais seulement la moitié de son temps. Le vélo n'entre dans aucune des deux.";
+
+/**
+ * Avancement d'une semaine du plan, sur les seules sorties à pied — course et
+ * randonnée. Le vélo reste dehors : il n'alimente ni les heures ni le D+ du
+ * contrat de la semaine.
  */
 export function planProgress(week: PlanWeek, activities: Activity[]): PlanProgress {
   let duration = 0;
   let elevationGain = 0;
   for (const activity of activities) {
-    if (activity.sport !== "run") continue;
-    duration += activity.duration ?? 0;
+    if (activity.sport !== "run" && activity.sport !== "hike") continue;
+    const share = activity.sport === "hike" ? HIKE_DURATION_SHARE : 1;
+    duration += (activity.duration ?? 0) * share;
     elevationGain += activity.elevationGain ?? 0;
   }
 

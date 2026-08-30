@@ -293,6 +293,41 @@ input[type="date"] {
 
 .app-header-period {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Pastille « i » : porte l'explication du comptage du plan, à côté des dates.
+   Elle est en haut de page et collée au bord gauche, d'où une infobulle
+   basculée dessous et alignée sur son bord — au-dessus et centrée, elle
+   sortirait de la fenêtre des deux côtés. */
+.info-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  font-size: 10px;
+  font-style: italic;
+  line-height: 1;
+  cursor: help;
+}
+
+.info-dot[data-tooltip]::after {
+  top: calc(100% + 8px);
+  bottom: auto;
+  left: 0;
+  transform: none;
+}
+
+.info-dot[data-tooltip]::before {
+  top: calc(100% + 4px);
+  bottom: auto;
+  left: 8px;
+  transform: rotate(225deg);
 }
 
 .app-header-actions {

@@ -50,8 +50,9 @@ export function Summary({ allActivities, status, planWeek }: SummaryProps) {
 
   const total = useMemo(() => summarize(currentActivities), [currentActivities]);
 
-  // Les quatre cartes affichent en grand la course à pied — la seule qui compte
-  // pour le plan — et gardent le total tous sports en pied de carte.
+  // Sorties et distance restent la course à pied seule : ce sont les deux
+  // grandeurs qu'aucune cible ne pilote, y mêler la rando les rendrait
+  // illisibles. Le total tous sports reste en pied de carte.
   const currentRun = useMemo(
     () => summarize(currentActivities.filter((activity) => activity.sport === "run")),
     [currentActivities],
@@ -121,9 +122,15 @@ export function Summary({ allActivities, status, planWeek }: SummaryProps) {
                   {formatElevationValue(currentRun.totalElevationGain)}
                 </p>
               )}
+              {/* La comparaison porte sur ce que la carte affiche en grand —
+                  le réalisé du plan quand il y en a un, qui compte déjà la
+                  rando — sinon le pied de carte répéterait la valeur du haut. */}
               <StatTotal
                 text={formatElevationValue(total.totalElevationGain)}
-                redundant={total.totalElevationGain === currentRun.totalElevationGain}
+                redundant={
+                  total.totalElevationGain ===
+                  (planRun ? planRun.elevationGain : currentRun.totalElevationGain)
+                }
               />
             </div>
             <div className="card stat">
@@ -144,7 +151,9 @@ export function Summary({ allActivities, status, planWeek }: SummaryProps) {
               )}
               <StatTotal
                 text={formatDuration(total.totalDuration)}
-                redundant={total.totalDuration === currentRun.totalDuration}
+                redundant={
+                  total.totalDuration === (planRun ? planRun.duration : currentRun.totalDuration)
+                }
               />
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { PLAN_COUNTING_RULE } from "../domain/plan";
 import type { SyncStatus as SyncStatusValue } from "../data/sync";
 
 interface AppHeaderProps {
@@ -94,7 +95,20 @@ export function AppHeader({
   return (
     <header className="app-header">
       <div className="app-header-line">
-        <p className="app-header-period caption muted">{periodLabel}</p>
+        <p className="app-header-period caption muted">
+          {periodLabel}
+          {/* Focusable et porteur du texte complet en `aria-label` : l'infobulle
+              seule serait invisible au clavier comme au lecteur d'écran. */}
+          <span
+            className="info-dot"
+            tabIndex={0}
+            role="note"
+            aria-label={`Comptage du plan. ${PLAN_COUNTING_RULE}`}
+            data-tooltip={PLAN_COUNTING_RULE}
+          >
+            i
+          </span>
+        </p>
 
         <div className="app-header-right">
           <p className="app-header-count">

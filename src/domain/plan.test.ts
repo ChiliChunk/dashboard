@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  HIKE_DURATION_SHARE,
   PLAN_START,
   PLAN_WEEKS,
   planProgress,
@@ -79,10 +80,18 @@ describe("planWeekRange", () => {
 describe("planProgress", () => {
   const week = PLAN_WEEKS[0]!;
 
-  it("ne compte que les sorties de course à pied", () => {
+  it("compte la course en entier, la rando pour tout son D+ et la moitié de son temps", () => {
     const progress = planProgress(week, [
       activity({ sport: "run", duration: 3600, elevationGain: 400 }),
       activity({ id: 2, sport: "hike", duration: 7200, elevationGain: 1200 }),
+    ]);
+    expect(progress.duration).toBe(3600 + 7200 * HIKE_DURATION_SHARE);
+    expect(progress.elevationGain).toBe(1600);
+  });
+
+  it("laisse le vélo hors des deux compteurs", () => {
+    const progress = planProgress(week, [
+      activity({ sport: "run", duration: 3600, elevationGain: 400 }),
       activity({ id: 3, sport: "ride", duration: 5400, elevationGain: 800 }),
     ]);
     expect(progress.duration).toBe(3600);
