@@ -293,6 +293,7 @@ input[type="date"] {
 
 .app-header-period {
   flex-shrink: 0;
+  margin-right: auto;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -979,4 +980,252 @@ dt {
   .stat-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* Navigation entre les deux pages, en tête de bandeau. Elle précède les dates
+   et les laisse collées à elle : la marge automatique porte sur les dates, pas
+   sur la navigation, pour que le bloc de droite reste à droite. */
+.app-nav {
+  display: inline-flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.app-nav-link {
+  padding: 4px 10px;
+  border-radius: var(--radius-ctl);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: var(--fs-caption);
+}
+
+.app-nav-link:hover {
+  background: var(--bg-track);
+  color: var(--text);
+}
+
+.app-nav-link[aria-current="page"] {
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+/* Plans successifs : le plan courant et ceux d'avant, dont les semaines
+   gardent les cibles sous lesquelles elles ont été courues. */
+.plan-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.plan-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 6px 12px;
+  background: var(--bg-track);
+  border: 1px solid transparent;
+  border-radius: var(--radius-ctl);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: var(--fs-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+.plan-tab:hover {
+  color: var(--text);
+}
+
+.plan-tab[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* Pastille de renfo, sous le numéro de semaine : pleine quand la séance est
+   pointée, creuse quand elle reste à faire, invisible quand le plan n'en
+   prescrit pas — la place reste prise dans les trois cas, pour que les
+   semaines gardent la même ligne de base. */
+.plan-week-renfo {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+}
+
+.plan-week-renfo[data-renfo="done"] {
+  background: var(--quota-ok);
+  border-color: var(--quota-ok);
+}
+
+.plan-week-renfo[data-renfo="todo"] {
+  border-color: var(--text-muted);
+}
+
+/* Contenu clé de la semaine, une séance par ligne : le plan l'écrit en une
+   seule phrase à points médians, illisible d'un coup d'œil. */
+.plan-workouts {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+}
+
+.plan-workouts li {
+  position: relative;
+  padding-left: 12px;
+}
+
+.plan-workouts li::before {
+  content: "·";
+  position: absolute;
+  left: 3px;
+}
+
+/* Renfo de la semaine détaillée, détaché par un filet : c'est la seule ligne
+   du plan qui se pointe à la main, elle n'a pas à se confondre avec ce que la
+   synchronisation remplit toute seule. */
+.plan-renfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--bg-track);
+}
+
+.plan-renfo-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.plan-renfo-link {
+  color: var(--accent);
+}
+
+.plan-renfo-check,
+.renfo-week-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.plan-renfo-check input,
+.renfo-week-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--quota-ok);
+  cursor: pointer;
+}
+
+/* Une semaine à venir n'a rien à pointer : la case reste visible mais inerte,
+   plutôt que de disparaître et de déplacer tout le bloc. */
+.plan-renfo-check:has(input:disabled),
+.renfo-week-check:has(input:disabled) {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.plan-renfo-check input:disabled,
+.renfo-week-check input:disabled {
+  cursor: default;
+}
+
+/* Renfo de la semaine en cours (RenfoWeekCard) : question à réponse binaire,
+   donc une carte en ligne plutôt qu'une carte à chiffre. */
+.renfo-week {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 20px 28px;
+}
+
+.renfo-week > * + * {
+  margin-top: 0;
+}
+
+.renfo-week[data-done="true"] {
+  box-shadow: inset 2px 0 0 var(--quota-ok);
+}
+
+.renfo-week-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.renfo-week-prescription {
+  font-weight: 500;
+}
+
+/* Circuits de renfo (RenfoView) */
+
+.renfo-circuit-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Numérotés : on les suit dans l'ordre, une page ouverte pendant la séance. */
+.renfo-exercises {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: exercise;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.renfo-exercises li {
+  position: relative;
+  padding-left: 26px;
+  counter-increment: exercise;
+}
+
+.renfo-exercises li::before {
+  content: counter(exercise);
+  position: absolute;
+  left: 0;
+  width: 18px;
+  text-align: right;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Semaines qui programment ce circuit : pleines quand elles sont pointées. */
+.renfo-weeks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.renfo-weeks li {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--bg-track);
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  font-variant-numeric: tabular-nums;
+}
+
+.renfo-weeks li[data-done="true"] {
+  background: color-mix(in srgb, var(--quota-ok) 32%, var(--bg-card));
+  color: var(--text);
 }

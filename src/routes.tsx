@@ -3,6 +3,7 @@ import type { SyncSnapshot } from "./data/sync";
 import { ActivityDetail } from "./ui/ActivityDetail";
 import { ActivityList } from "./ui/ActivityList";
 import type { PlanWeekSelection } from "./ui/planWeek";
+import { RenfoView } from "./ui/RenfoView";
 import { Summary } from "./ui/Summary";
 import { VolumeChart } from "./ui/VolumeChart";
 
@@ -27,6 +28,7 @@ export function AppRoutes({ sync, planWeek }: RoutesProps) {
       <Route path="/">
         <HomePage sync={sync} planWeek={planWeek} />
       </Route>
+      <Route path="/renfo" component={RenfoView} />
       <Route path="/activity/:id" component={ActivityDetail} />
     </Switch>
   );

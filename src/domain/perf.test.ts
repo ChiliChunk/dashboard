@@ -34,6 +34,10 @@ function syntheticActivities(count: number): Activity[] {
  * part relève de la vérification manuelle (T073/T074), pas de ce test.
  */
 describe("performance sur un historique de 5000 activités", () => {
+  // Le délai de vitest couvre aussi le montage — 5 000 écritures dans
+  // IndexedDB, qui prennent à elles seules plusieurs secondes sur le
+  // Raspberry. Il est desserré pour que seule l'assertion ci-dessous, qui
+  // porte sur la lecture et l'agrégation, décide du verdict.
   it("lecture du cache + agrégation de la synthèse reste sous 2 s (ENF4)", async () => {
     await clearDatabase();
     const activities = syntheticActivities(5000);
@@ -51,7 +55,7 @@ describe("performance sur un historique de 5000 activités", () => {
     const elapsed = performance.now() - start;
 
     expect(elapsed).toBeLessThan(2000);
-  });
+  }, 30000);
 
   it("borner une période puis trier reste sous 300 ms (ENF5)", () => {
     const activities = syntheticActivities(5000);

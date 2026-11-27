@@ -4,11 +4,13 @@ import { isWithinPeriod, resolvePeriod } from "../domain/period";
 import { planProgress, planWeekAt } from "../domain/plan";
 import type { Activity } from "../domain/types";
 import { formatDistance, formatDuration, formatElevationValue } from "../domain/units";
+import { useRenfoLog } from "../data/renfoLog";
 import type { SyncStatus as SyncStatusValue } from "../data/sync";
 import { DayBreakdown } from "./DayBreakdown";
 import { EmptyState } from "./EmptyState";
 import type { PlanWeekSelection } from "./planWeek";
 import { PlanOutlook } from "./PlanOutlook";
+import { RenfoWeekCard } from "./RenfoWeekCard";
 import { TargetRing } from "./TargetRing";
 
 /**
@@ -42,6 +44,10 @@ interface SummaryProps {
  */
 export function Summary({ allActivities, status, planWeek }: SummaryProps) {
   const period = useMemo(() => resolvePeriod("current-week"), []);
+  // Un seul journal de renfo pour la page : la carte de la semaine en cours et
+  // les cases de la bande du plan pointent le même stockage, elles ne peuvent
+  // donc pas se contredire à l'écran.
+  const renfo = useRenfoLog();
 
   const currentActivities = useMemo(
     () => allActivities.filter((activity) => isWithinPeriod(activity.startedAtLocal, period)),
@@ -160,13 +166,11 @@ export function Summary({ allActivities, status, planWeek }: SummaryProps) {
         </div>
       )}
 
+      <RenfoWeekCard renfo={renfo} />
+
       <DayBreakdown weekStart={planWeek.start} allActivities={allActivities} />
 
-      <PlanOutlook
-        activities={allActivities}
-        selected={planWeek.number}
-        onSelect={planWeek.select}
-      />
+      <PlanOutlook activities={allActivities} planWeek={planWeek} renfo={renfo} />
     </div>
   );
 }

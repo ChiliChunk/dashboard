@@ -3,7 +3,7 @@ import { useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { garminActivityUrl } from "../domain/activity";
 import { sortActivities, type SortDirection, type SortField } from "../domain/filter";
-import { planWeekNumberAt } from "../domain/plan";
+import { planWeekAt } from "../domain/plan";
 import type { Activity, SportKind } from "../domain/types";
 import { formatDistance, formatDuration, formatElevationValue } from "../domain/units";
 import { EmptyState } from "./EmptyState";
@@ -122,8 +122,10 @@ export function ActivityList({ activities }: ActivityListProps) {
           {virtualizer.getVirtualItems().map((virtualRow) => {
             const activity = sorted[virtualRow.index];
             if (!activity) return null;
-            // Rien pour les sorties antérieures au plan ou postérieures à la course.
-            const planWeek = planWeekNumberAt(activity.startedAtLocal);
+            // Tous plans confondus : une sortie d'un plan précédent garde la
+            // pastille de la semaine sous laquelle elle a été courue. Rien
+            // pour une sortie tombée hors de tout plan.
+            const planWeek = planWeekAt(activity.startedAtLocal)?.number ?? null;
             return (
               <a
                 key={activity.id}

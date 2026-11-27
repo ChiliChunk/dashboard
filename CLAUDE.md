@@ -109,10 +109,27 @@ stockage :
   volontairement : le front vit sur une autre origine (port 5173), il ne
   pourrait pas lire la réponse autrement. Portée assumée au réseau local
   seulement.
-- **`src/domain/plan.ts`** lit `plan_trail_44k_1500d.json`, un plan
-  d'entraînement figé versionné avec le code — ni synchronisé ni recalculé.
-  Seules trois valeurs par semaine en sont extraites (heures à pied, D+ à
-  pied, plafond toutes activités) ; le reste du document est documentaire.
+- **`src/domain/plan.ts`** lit les plans d'entraînement, documents figés
+  versionnés avec le code — ni synchronisés ni recalculés. Il y en a
+  plusieurs, du plus ancien au plus récent (`PLANS`) : un plan remplacé n'est
+  pas supprimé, pour que les semaines déjà courues gardent les cibles sous
+  lesquelles elles l'ont été et restent relisibles (onglets de plan dans
+  `PlanOutlook`). `plan_semi_trail_44k_2500d.json` est le plan courant (22
+  semaines, semi-marathon du 2027-02-07 puis trail 44 km / 2500 D+ du
+  2027-04-25) ; `plan_trail_44k_1500d.json` est le précédent, terminé fin
+  octobre 2026, conservé tel quel. Deux cibles seulement sont calculées
+  (heures à pied, D+ à pied) ; le reste (contenu clé, renfo, plafond,
+  sortie optionnelle) s'affiche tel quel ou est documentaire. Les champs que
+  seul un des deux plans porte valent `null` dans l'autre — c'est voulu, un
+  plan n'est pas tenu de prescrire ce que l'autre prescrivait.
+- **Renfo** : la seule partie du plan qu'aucune montre ne mesure (du gainage,
+  pas une sortie). Elle ne vient donc jamais de Garmin et se pointe à la main.
+  `src/domain/renfo.ts` tient la logique pure, le pointage est stocké dans
+  IndexedDB (magasin `renfo`, version 2 du schéma) et indexé par **lundi de la
+  semaine ISO**, pas par numéro de semaine de plan : une clé survit ainsi à un
+  changement de plan ou à un décalage de ses semaines. Seules les semaines
+  faites sont stockées, décocher supprime l'entrée. `src/ui/RenfoView.tsx`
+  (route `/renfo`) montre les circuits et leurs exercices.
 - **`src/data/garmin.ts`** construit l'URL du service à partir du hostname de
   la page consultée, pas d'une constante : le dashboard s'ouvre aussi bien
   sur `localhost` que sur l'IP LAN du Raspberry, et le backend doit être

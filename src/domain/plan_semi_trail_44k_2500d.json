@@ -1,0 +1,253 @@
+{
+  "meta": {
+    "version": "1.0",
+    "nom": "Semi + Trail 44 km",
+    "source": "Feuille « Plan d'entraînement Semi + Trail 44 km — Déc 2026 → Avr 2027 », révision 7",
+    "libelle_seances": "séances",
+    "objectifs": [
+      {
+        "nom": "Semi-marathon",
+        "date": "2027-02-07",
+        "distance_km": 21.1,
+        "denivele_positif_m": null,
+        "temps_estime_fourchette": null
+      },
+      {
+        "nom": "Trail 44 km / 2500 D+",
+        "date": "2027-04-25",
+        "distance_km": 44,
+        "denivele_positif_m": 2500,
+        "temps_estime_fourchette": null
+      }
+    ],
+    "reference_base": {
+      "moyenne_6_mois": { "duree_min": 224, "dplus": 723, "seances": 2.6 },
+      "moyenne_4_semaines": { "duree_min": 147, "dplus": 190, "seances": 2.5 },
+      "commentaire": "Relevé des six derniers mois au moment de la construction du plan. Documentaire : aucun calcul ne s'en sert."
+    },
+    "total_plan": {
+      "duree_min": 5880,
+      "dplus": 17850,
+      "commentaire": "Hors jours de course. Somme des 22 semaines, recalculée par les tests."
+    }
+  },
+  "renfo": [
+    {
+      "id": "A",
+      "nom": "A — Fondamental",
+      "quand": "S1, S2 (remise en route)",
+      "format": "5' échauffement + 3 tours",
+      "exercices": [
+        "Gainage ventral 40''",
+        "Gainage latéral 30''/côté",
+        "Squats ×15",
+        "Fentes avant ×10/jambe",
+        "Pont fessier ×15",
+        "Mollets ×20"
+      ],
+      "progression": null,
+      "note": null
+    },
+    {
+      "id": "B",
+      "nom": "B — Force + pliométrie",
+      "quand": "S5, S7, S9",
+      "format": "5' échauffement + 3 tours",
+      "exercices": [
+        "Squats sautés ×10",
+        "Fentes sautées ×8/jambe",
+        "Montées sur banc ×12/jambe",
+        "Planche touche-épaule 30''",
+        "Mollet unipodal ×15/jambe",
+        "Corde à sauter 1'"
+      ],
+      "progression": null,
+      "note": null
+    },
+    {
+      "id": "C",
+      "nom": "C — Trail",
+      "quand": "S3, S4, S6, S8 puis S12 → S19",
+      "format": "5' échauffement + 3 tours",
+      "exercices": [
+        "Squat excentrique (4 s en descente) ×12",
+        "Fentes bulgares ×10/jambe",
+        "Step-down lent ×10/jambe",
+        "Pont fessier unipodal ×12/jambe",
+        "Équilibre unipodal (yeux fermés ou coussin) 30''/jambe",
+        "Gainage latéral avec rotation 30''/côté"
+      ],
+      "progression": "À partir de S12 : sac lesté (5-8 kg) sur les squats, les fentes bulgares et les step-downs, et step-down sur une marche plus haute.",
+      "note": null
+    },
+    {
+      "id": "leger",
+      "nom": "Léger — Entretien",
+      "quand": "S10, S11, S20, S21, S22",
+      "format": "15-20' en continu",
+      "exercices": [
+        "Gainage (ventral, latéral, dorsal)",
+        "Mobilité hanches et chevilles",
+        "Étirements doux"
+      ],
+      "progression": null,
+      "note": "Rien de neuf ni de lourd les semaines de course."
+    }
+  ],
+  "semaines": [
+    {
+      "numero": 1, "semaine_du": "2026-11-30", "phase": "Base — route + trail",
+      "duree_min": 225, "dplus": 300, "seances": 3,
+      "contenu": "Fartlek 8×1' vite / 1' lent · footing · SL 1h30 vallonnée (trail si possible)",
+      "renfo": { "circuit": "A", "duree": "25'", "consigne": "Circuit A — fondamental (25')" },
+      "note": null
+    },
+    {
+      "numero": 2, "semaine_du": "2026-12-07", "phase": "Base — route + trail",
+      "duree_min": 255, "dplus": 400, "seances": 4,
+      "contenu": "Seuil 3×8' (récup 2') · côtes 8×1' (Pech-David) · footing · SL 1h35 vallonnée",
+      "renfo": { "circuit": "A", "duree": "25'", "consigne": "Circuit A (25')" },
+      "note": null
+    },
+    {
+      "numero": 3, "semaine_du": "2026-12-14", "phase": "Base — route + trail",
+      "duree_min": 285, "dplus": 450, "seances": 4,
+      "contenu": "Tempo 2×12' allure semi · footing · SL 1h45 vallonnée (trail si possible)",
+      "renfo": { "circuit": "C", "duree": "25'", "consigne": "Circuit C — trail (25')" },
+      "note": null
+    },
+    {
+      "numero": 4, "semaine_du": "2026-12-21", "phase": "Allégée (Noël)",
+      "duree_min": 210, "dplus": 300, "seances": 3,
+      "contenu": "Footings libres + 6 lignes droites · SL 1h20 tranquille",
+      "renfo": { "circuit": "C", "duree": "20'", "consigne": "Circuit C (20')" },
+      "note": null
+    },
+    {
+      "numero": 5, "semaine_du": "2026-12-28", "phase": "Semi + foncier trail",
+      "duree_min": 300, "dplus": 500, "seances": 4,
+      "contenu": "Seuil 3×10' · côtes 6×2' (Pech-David) · SL 1h50 vallonnée",
+      "renfo": { "circuit": "B", "duree": "25'", "consigne": "Circuit B — force + pliométrie (25')" },
+      "note": null
+    },
+    {
+      "numero": 6, "semaine_du": "2027-01-04", "phase": "Semi + foncier trail",
+      "duree_min": 315, "dplus": 500, "seances": 4,
+      "contenu": "6×1000 m allure 10 km (récup 1'30) · footing · SL 1h50 vallonnée (trail si possible)",
+      "renfo": { "circuit": "C", "duree": "25'", "consigne": "Circuit C — trail (25')" },
+      "note": null
+    },
+    {
+      "numero": 7, "semaine_du": "2027-01-11", "phase": "Spécifique semi",
+      "duree_min": 330, "dplus": 450, "seances": 4,
+      "contenu": "3×15' allure semi (récup 3') · côtes 6×1' · SL route 1h50 dont 3×10' allure semi",
+      "renfo": { "circuit": "B", "duree": "25'", "consigne": "Circuit B (25')" },
+      "note": null
+    },
+    {
+      "numero": 8, "semaine_du": "2027-01-18", "phase": "Allégée",
+      "duree_min": 240, "dplus": 350, "seances": 3,
+      "contenu": "Test 10 km (ou course) pour caler l'allure semi · footings souples",
+      "renfo": { "circuit": "C", "duree": "20'", "consigne": "Circuit C (20')" },
+      "note": null
+    },
+    {
+      "numero": 9, "semaine_du": "2027-01-25", "phase": "Spécifique semi — dernier bloc",
+      "duree_min": 315, "dplus": 400, "seances": 4,
+      "contenu": "2×5 km allure semi (récup 3') · côtes 6×1' · SL route 1h45 dont 40' allure semi",
+      "renfo": { "circuit": "B", "duree": "25'", "consigne": "Circuit B (25')" },
+      "note": null
+    },
+    {
+      "numero": 10, "semaine_du": "2027-02-01", "phase": "Affûtage + SEMI",
+      "duree_min": 105, "dplus": 100, "seances": 2,
+      "contenu": "Mar 3×2 km allure semi · Jeu 30' + 4 lignes droites · ★ DIM 7/02 SEMI-MARATHON",
+      "renfo": { "circuit": "leger", "duree": "20'", "consigne": "Léger — gainage + mobilité (20'), mardi au plus tard" },
+      "note": "Semaine de course : semi-marathon le dimanche 7 février."
+    },
+    {
+      "numero": 11, "semaine_du": "2027-02-08", "phase": "Récupération",
+      "duree_min": 150, "dplus": 200, "seances": 3,
+      "contenu": "Footings souples uniquement (vélo / rando OK)",
+      "renfo": { "circuit": "leger", "duree": "20'", "consigne": "Léger (20')" },
+      "note": null
+    },
+    {
+      "numero": 12, "semaine_du": "2027-02-15", "phase": "Reprise trail",
+      "duree_min": 270, "dplus": 1000, "seances": 4,
+      "contenu": "Côtes 6×2' · footing · SL trail 2h00 / 600 D+",
+      "renfo": { "circuit": "C", "duree": "25'", "consigne": "Circuit C — trail (25')" },
+      "note": null
+    },
+    {
+      "numero": 13, "semaine_du": "2027-02-22", "phase": "Développement trail",
+      "duree_min": 315, "dplus": 1300, "seances": 4,
+      "contenu": "Côtes 6×3' · seuil 2×10' sur plat · SL 2h30 / 800 D+",
+      "renfo": { "circuit": "C", "duree": "25'", "consigne": "Circuit C (25')" },
+      "note": null
+    },
+    {
+      "numero": 14, "semaine_du": "2027-03-01", "phase": "Développement trail",
+      "duree_min": 360, "dplus": 1500, "seances": 4,
+      "contenu": "Côtes 5×5' · SL 3h00 / 1000 D+ (tester ravito et bâtons)",
+      "renfo": { "circuit": "C", "duree": "30'", "consigne": "Circuit C (30')" },
+      "note": null
+    },
+    {
+      "numero": 15, "semaine_du": "2027-03-08", "phase": "Allégée",
+      "duree_min": 255, "dplus": 900, "seances": 3,
+      "contenu": "Footings + SL 2h00 / 600 D+ en aisance",
+      "renfo": { "circuit": "C", "duree": "20'", "consigne": "Circuit C (20')" },
+      "note": null
+    },
+    {
+      "numero": 16, "semaine_du": "2027-03-15", "phase": "Spécifique trail",
+      "duree_min": 390, "dplus": 1900, "seances": 4,
+      "contenu": "Seuil en côte 4×6' · travail de descente · SL 3h30 / 1300 D+",
+      "renfo": { "circuit": "C", "duree": "30'", "consigne": "Circuit C (30')" },
+      "note": null
+    },
+    {
+      "numero": 17, "semaine_du": "2027-03-22", "phase": "Spécifique trail",
+      "duree_min": 420, "dplus": 2300, "seances": 4,
+      "contenu": "Week-end choc : sam 3h00 / 1200 D+ + dim 2h00 / 800 D+",
+      "renfo": { "circuit": "C", "duree": "25'", "consigne": "Circuit C (25'), en début de semaine" },
+      "note": null
+    },
+    {
+      "numero": 18, "semaine_du": "2027-03-29", "phase": "PIC",
+      "duree_min": 435, "dplus": 2500, "seances": 4,
+      "contenu": "SL 4h30 / 1800 D+ = répétition générale (matériel, nutrition, allure de course)",
+      "renfo": { "circuit": "C", "duree": "25'", "consigne": "Circuit C (25')" },
+      "note": null
+    },
+    {
+      "numero": 19, "semaine_du": "2027-04-05", "phase": "Entretien",
+      "duree_min": 300, "dplus": 1400, "seances": 4,
+      "contenu": "Côtes 4×5' · SL 2h45 / 1000 D+",
+      "renfo": { "circuit": "C", "duree": "20'", "consigne": "Circuit C (20') — dernier renfo lourd" },
+      "note": null
+    },
+    {
+      "numero": 20, "semaine_du": "2027-04-12", "phase": "Affûtage",
+      "duree_min": 225, "dplus": 800, "seances": 3,
+      "contenu": "Rappel côtes 4×3' · SL 1h45 / 500 D+",
+      "renfo": { "circuit": "leger", "duree": "20'", "consigne": "Léger (20')" },
+      "note": null
+    },
+    {
+      "numero": 21, "semaine_du": "2027-04-19", "phase": "Semaine course",
+      "duree_min": 90, "dplus": 200, "seances": 2,
+      "contenu": "2 footings courts avec quelques accélérations · ★ DIM 25/04 TRAIL 44 km / 2500 D+",
+      "renfo": { "circuit": "leger", "duree": "15-20'", "consigne": "Léger (15-20'), lundi uniquement" },
+      "note": "Semaine de course : trail 44 km / 2500 D+ le dimanche 25 avril."
+    },
+    {
+      "numero": 22, "semaine_du": "2027-04-26", "phase": "Récupération",
+      "duree_min": 90, "dplus": 100, "seances": 2,
+      "contenu": "Footings très souples, vélo ou rando",
+      "renfo": { "circuit": "leger", "duree": "20'", "consigne": "Mobilité (20'), optionnel" },
+      "note": null
+    }
+  ]
+}

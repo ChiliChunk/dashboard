@@ -1,3 +1,4 @@
+import { Link, useLocation } from "wouter";
 import { PLAN_COUNTING_RULE } from "../domain/plan";
 import type { SyncStatus as SyncStatusValue } from "../data/sync";
 
@@ -91,10 +92,26 @@ export function AppHeader({
   onClear,
 }: AppHeaderProps) {
   const isSyncing = status === "syncing";
+  const [location] = useLocation();
 
   return (
     <header className="app-header">
       <div className="app-header-line">
+        {/* Deux pages seulement : le tableau de bord et les circuits de renfo,
+            qu'on ouvre pour les suivre pendant la séance. */}
+        <nav className="app-nav" aria-label="Pages">
+          <Link href="/" className="app-nav-link" aria-current={location === "/" ? "page" : undefined}>
+            Tableau de bord
+          </Link>
+          <Link
+            href="/renfo"
+            className="app-nav-link"
+            aria-current={location === "/renfo" ? "page" : undefined}
+          >
+            Renfo
+          </Link>
+        </nav>
+
         <p className="app-header-period caption muted">
           {periodLabel}
           {/* Focusable et porteur du texte complet en `aria-label` : l'infobulle
