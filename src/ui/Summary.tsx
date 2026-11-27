@@ -170,7 +170,14 @@ export function Summary({ allActivities, status, planWeek }: SummaryProps) {
 
       <DayBreakdown weekStart={planWeek.start} allActivities={allActivities} />
 
-      <PlanOutlook activities={allActivities} planWeek={planWeek} renfo={renfo} />
+      <PlanOutlook
+        activities={allActivities}
+        plans={[planWeek.plan]}
+        plan={planWeek.plan}
+        selectedWeek={planWeek.number}
+        onSelect={planWeek.select}
+        renfo={renfo}
+      />
     </div>
   );
 }

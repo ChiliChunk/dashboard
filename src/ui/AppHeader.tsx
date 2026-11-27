@@ -97,8 +97,8 @@ export function AppHeader({
   return (
     <header className="app-header">
       <div className="app-header-line">
-        {/* Deux pages seulement : le tableau de bord et les circuits de renfo,
-            qu'on ouvre pour les suivre pendant la séance. */}
+        {/* Le tableau de bord, les circuits de renfo qu'on ouvre pour les
+            suivre pendant la séance, et les plans terminés. */}
         <nav className="app-nav" aria-label="Pages">
           <Link href="/" className="app-nav-link" aria-current={location === "/" ? "page" : undefined}>
             Tableau de bord
@@ -109,6 +109,13 @@ export function AppHeader({
             aria-current={location === "/renfo" ? "page" : undefined}
           >
             Renfo
+          </Link>
+          <Link
+            href="/historique"
+            className="app-nav-link"
+            aria-current={location === "/historique" ? "page" : undefined}
+          >
+            Historique
           </Link>
         </nav>
 

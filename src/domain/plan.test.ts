@@ -2,6 +2,7 @@ import { differenceInCalendarDays } from "date-fns";
 import { describe, expect, it } from "vitest";
 import {
   activePlanAt,
+  finishedPlansAt,
   HIKE_DURATION_SHARE,
   PLANS,
   planById,
@@ -182,6 +183,24 @@ describe("activePlanAt", () => {
   it("avant le premier plan, rend le premier ; après le dernier, le dernier", () => {
     expect(activePlanAt(new Date(2026, 0, 1)).id).toBe(LEGACY);
     expect(activePlanAt(new Date(2028, 0, 1)).id).toBe(CURRENT);
+  });
+});
+
+describe("finishedPlansAt", () => {
+  it("ne retient que les plans dont la dernière semaine est passée", () => {
+    expect(finishedPlansAt(new Date(2026, 10, 27)).map((entry) => entry.id)).toEqual([LEGACY]);
+  });
+
+  it("laisse dehors le plan en cours et celui qui n'a pas commencé", () => {
+    expect(finishedPlansAt(new Date(2026, 7, 10))).toEqual([]);
+    expect(finishedPlansAt(new Date(2027, 0, 15)).map((entry) => entry.id)).toEqual([LEGACY]);
+  });
+
+  it("retient les deux plans une fois le second terminé", () => {
+    expect(finishedPlansAt(new Date(2027, 5, 1)).map((entry) => entry.id)).toEqual([
+      LEGACY,
+      CURRENT,
+    ]);
   });
 });
 

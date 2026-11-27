@@ -2,6 +2,7 @@ import { Route, Switch } from "wouter";
 import type { SyncSnapshot } from "./data/sync";
 import { ActivityDetail } from "./ui/ActivityDetail";
 import { ActivityList } from "./ui/ActivityList";
+import { PlanHistory } from "./ui/PlanHistory";
 import type { PlanWeekSelection } from "./ui/planWeek";
 import { RenfoView } from "./ui/RenfoView";
 import { Summary } from "./ui/Summary";
@@ -27,6 +28,9 @@ export function AppRoutes({ sync, planWeek }: RoutesProps) {
     <Switch>
       <Route path="/">
         <HomePage sync={sync} planWeek={planWeek} />
+      </Route>
+      <Route path="/historique">
+        <PlanHistory activities={sync.activities} />
       </Route>
       <Route path="/renfo" component={RenfoView} />
       <Route path="/activity/:id" component={ActivityDetail} />

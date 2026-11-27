@@ -113,8 +113,11 @@ stockage :
   versionnés avec le code — ni synchronisés ni recalculés. Il y en a
   plusieurs, du plus ancien au plus récent (`PLANS`) : un plan remplacé n'est
   pas supprimé, pour que les semaines déjà courues gardent les cibles sous
-  lesquelles elles l'ont été et restent relisibles (onglets de plan dans
-  `PlanOutlook`). `plan_semi_trail_44k_2500d.json` est le plan courant (22
+  lesquelles elles l'ont été et restent relisibles. Les plans terminés
+  (`finishedPlansAt`) ont leur page, `src/ui/PlanHistory.tsx` (route
+  `/historique`), qui réemploie `PlanOutlook` — d'où les plans affichables
+  passés en paramètre à cette vue plutôt que lus depuis `PLANS` : le tableau
+  de bord ne montre que le plan courant. `plan_semi_trail_44k_2500d.json` est le plan courant (22
   semaines, semi-marathon du 2027-02-07 puis trail 44 km / 2500 D+ du
   2027-04-25) ; `plan_trail_44k_1500d.json` est le précédent, terminé fin
   octobre 2026, conservé tel quel. Deux cibles seulement sont calculées

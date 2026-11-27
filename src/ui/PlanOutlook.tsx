@@ -3,7 +3,6 @@ import { format, isWithinInterval } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Link } from "wouter";
 import {
-  PLANS,
   planProgress,
   planWeekNumberAt,
   planWeekRange,
@@ -15,7 +14,6 @@ import { isRenfoDoneAt, renfoDoneCount } from "../domain/renfo";
 import type { Activity } from "../domain/types";
 import { formatDuration, formatElevationValue } from "../domain/units";
 import type { RenfoLogSnapshot } from "../data/renfoLog";
-import type { PlanWeekSelection } from "./planWeek";
 
 /** Hauteur, en pixels, de la barre correspondant à la plus grosse cible du plan. */
 const BAR_MAX_HEIGHT = 84;
@@ -63,8 +61,17 @@ function objectiveLabel(plan: Plan): string | null {
 
 interface PlanOutlookProps {
   activities: Activity[];
-  /** Semaine et plan détaillés, tenus par le parent : la répartition par jour affichée au-dessus suit la même semaine. */
-  planWeek: PlanWeekSelection;
+  /**
+   * Les plans que cette vue peut montrer, du plus ancien au plus récent : le
+   * seul plan courant sur le tableau de bord, les plans terminés dans
+   * l'historique. Des onglets n'apparaissent qu'au-delà d'un plan.
+   */
+  plans: Plan[];
+  /** Celui des `plans` affiché. */
+  plan: Plan;
+  /** Semaine détaillée, tenue par le parent : sur le tableau de bord, la répartition par jour suit la même. */
+  selectedWeek: number;
+  onSelect: (planId: string, weekNumber: number) => void;
   renfo: RenfoLogSnapshot;
 }
 
@@ -77,12 +84,19 @@ interface PlanOutlookProps {
  *
  * Chaque semaine est un bouton : le détail affiché dessous suit la sélection,
  * ainsi que la répartition par jour affichée au-dessus — d'où une sélection
- * tenue par le parent plutôt qu'ici. Les plans précédents se relisent par les
- * onglets du haut, avec leurs cibles d'alors.
+ * tenue par le parent plutôt qu'ici. Les plans précédents ne s'affichent pas
+ * ici mais dans la page d'historique, qui réemploie cette même vue : leurs
+ * semaines gardent les cibles sous lesquelles elles ont été courues.
  */
-export function PlanOutlook({ activities, planWeek, renfo }: PlanOutlookProps) {
+export function PlanOutlook({
+  activities,
+  plans,
+  plan,
+  selectedWeek,
+  onSelect,
+  renfo,
+}: PlanOutlookProps) {
   const today = useMemo(() => new Date(), []);
-  const plan = planWeek.plan;
   const currentNumber = useMemo(() => planWeekNumberAt(plan, today), [plan, today]);
 
   const ceilings = useMemo(
@@ -123,7 +137,7 @@ export function PlanOutlook({ activities, planWeek, renfo }: PlanOutlookProps) {
     });
   }, [activities, plan, renfo.done, today]);
 
-  const detail = weeks.find((entry) => entry.week.number === planWeek.number) ?? weeks[0];
+  const detail = weeks.find((entry) => entry.week.number === selectedWeek) ?? weeks[0];
   if (detail === undefined) return null;
 
   const { week } = detail;
@@ -148,17 +162,17 @@ export function PlanOutlook({ activities, planWeek, renfo }: PlanOutlookProps) {
         </p>
       </div>
 
-      {/* Les plans précédents ne sont pas supprimés : leurs semaines gardent
-          les cibles sous lesquelles elles ont été courues, et se relisent ici. */}
-      {PLANS.length > 1 && (
+      {/* Un seul plan : pas d'onglet à montrer. L'historique, lui, peut en
+          aligner plusieurs. */}
+      {plans.length > 1 && (
         <div className="plan-tabs" role="group" aria-label="Plan affiché">
-          {PLANS.map((candidate) => (
+          {plans.map((candidate) => (
             <button
               key={candidate.id}
               type="button"
               className="plan-tab"
               aria-pressed={candidate.id === plan.id}
-              onClick={() => planWeek.select(candidate.id, planWeekNumberAt(candidate, today) ?? 1)}
+              onClick={() => onSelect(candidate.id, planWeekNumberAt(candidate, today) ?? 1)}
             >
               {candidate.name}
               <span className="caption muted">
@@ -179,8 +193,8 @@ export function PlanOutlook({ activities, planWeek, renfo }: PlanOutlookProps) {
               type="button"
               className="plan-week"
               data-state={entry.state}
-              aria-pressed={entry.week.number === planWeek.number}
-              onClick={() => planWeek.select(plan.id, entry.week.number)}
+              aria-pressed={entry.week.number === selectedWeek}
+              onClick={() => onSelect(plan.id, entry.week.number)}
               aria-label={`Semaine ${entry.week.number}${entry.progress?.status === "both" ? ", objectifs atteints" : ""}${entry.week.renfo === null ? "" : entry.renfoDone ? ", renfo fait" : ", renfo à faire"}`}
             >
               {/* Toujours rendu, même vide : la ligne réservée garde les barres

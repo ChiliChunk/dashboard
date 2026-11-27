@@ -221,6 +221,16 @@ export function activePlanAt(date: Date): Plan {
   return PLANS[PLANS.length - 1] ?? CURRENT_PLAN;
 }
 
+/**
+ * Les plans dont la dernière semaine est passée, du plus ancien au plus
+ * récent : ce que montre la page d'historique. Un plan à venir n'en fait pas
+ * partie, et le plan en cours non plus — il se lit sur le tableau de bord,
+ * avec ce qu'il reste à faire.
+ */
+export function finishedPlansAt(date: Date): Plan[] {
+  return PLANS.filter((plan) => plan.end < date);
+}
+
 /** Numéro de semaine du plan donné couvrant cette date, ou `null` hors du plan. */
 export function planWeekNumberAt(plan: Plan, date: Date): number | null {
   const offset = differenceInCalendarISOWeeks(date, plan.start);
