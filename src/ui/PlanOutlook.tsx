@@ -43,13 +43,20 @@ function splitKeyWorkouts(keyWorkouts: string): string[] {
     .filter((part) => part.length > 0);
 }
 
+/**
+ * Les objectifs datés du plan, en une ligne. `flatMap` plutôt qu'un `filter` :
+ * il restreint le type en même temps qu'il écarte les objectifs sans date, là
+ * où un `filter` obligerait à réaffirmer à la main que la date est là.
+ */
 function objectiveLabel(plan: Plan): string | null {
-  const dated = plan.objectives.filter((objective) => objective.date !== null);
+  const dated = plan.objectives.flatMap((objective) =>
+    objective.date === null ? [] : [{ name: objective.name, date: objective.date }],
+  );
   if (dated.length === 0) return null;
   return dated
     .map(
       (objective) =>
-        `${objective.name} — ${format(objective.date as Date, "EEEE d MMMM yyyy", { locale: fr })}`,
+        `${objective.name} — ${format(objective.date, "EEEE d MMMM yyyy", { locale: fr })}`,
     )
     .join(" · ");
 }
@@ -128,6 +135,7 @@ export function PlanOutlook({ activities, planWeek, renfo }: PlanOutlookProps) {
 
   const circuit = renfoCircuitFor(plan, week);
   const renfoWeeks = plan.weeks.filter((candidate) => candidate.renfo !== null);
+  const renfoDone = renfoDoneCount(renfo.done, renfoWeeks);
   const objectives = objectiveLabel(plan);
 
   return (
@@ -296,10 +304,8 @@ export function PlanOutlook({ activities, planWeek, renfo }: PlanOutlookProps) {
               {circuit ? ` · ${circuit.format}` : ""}
             </p>
             <p className="caption muted">
-              {renfoDoneCount(renfo.done, renfoWeeks)} semaine
-              {renfoDoneCount(renfo.done, renfoWeeks) > 1 ? "s" : ""} pointée
-              {renfoDoneCount(renfo.done, renfoWeeks) > 1 ? "s" : ""} sur {renfoWeeks.length} du
-              plan
+              {renfoDone} semaine{renfoDone > 1 ? "s" : ""} pointée{renfoDone > 1 ? "s" : ""} sur{" "}
+              {renfoWeeks.length} du plan
             </p>
           </div>
         )}
